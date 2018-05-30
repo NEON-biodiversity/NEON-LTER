@@ -2,8 +2,11 @@
 
 QDR, 30 May 2018
 
-##Contributors
+## Contributors
+
 Krymsen Hernandez
+
+Cameo Chilcutt
 
 ## Purpose of repository
 
