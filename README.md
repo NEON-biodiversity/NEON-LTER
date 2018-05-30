@@ -2,6 +2,9 @@
 
 QDR, 30 May 2018
 
+##Contributors
+Krymsen Hernandez
+
 ## Purpose of repository
 
 This repository is for code written to do data processing, visualization, and analysis of NEON LTER data.
