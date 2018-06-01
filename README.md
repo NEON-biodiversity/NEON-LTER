@@ -4,8 +4,11 @@ QDR, 30 May 2018
 
 ## Contributors
 
+Phoebe Zarnetske
+Sydne Record
+Ben Baiser
+Quentin Read
 Krymsen Hernandez
-
 Cameo Chilcutt
 
 ## Purpose of repository
