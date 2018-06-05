@@ -5,10 +5,11 @@
 #Download packages ggplot2, ggsn, ggmap, rgdal
 
 #Load in libraries
-library(ggplot2)
-library (ggmap)
-library (ggsn)
-library(rgdal)
+library (ggmap) # generates google maps
+library(rgdal) # read in shapefile
+library(ggplot2) # visualize shapefile
+library (ggsn) # add scale bar and north arrow
+
 
 ##Extent of Toolik Field Station
 ##NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
