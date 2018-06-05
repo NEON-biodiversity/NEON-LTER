@@ -1,10 +1,11 @@
 # Title:			  Writing NEON Data in R
-# Site:			    ARC LTER
-# Data Sources:	https://toolik.alaska.edu/gis/data/
+# Site:			  ARC LTER
+# Data Sources:	  https://toolik.alaska.edu/gis/data/
 # Authors:		  Cameo Chilcutt
-# Date:			    4 June 2018
+# Date:			  4 June 2018
 
-setwd("C:\\Users\\Cameo Chilcutt\\Documents\\NEON\\camp_buildings$data\\Camp Buildings")
+# Set working directory to where you house "data" directory (with subdirectories raw_data, final_data, scripts, output)
+setwd("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data")
 rm(list = ls())
 
 #libraries
@@ -12,9 +13,9 @@ library(raster)
 library(rgdal)
 
 #import Camp Buildings 2010 shapefiles
-shape_path_CB10 <- "C:\\Users\\Cameo Chilcutt\\Documents\\NEON\\camp_buildings$data\\Camp Buildings"
-shape_name_CB10 <- "campbuilds_2010_100909"
-shape_extent_CB10 <- readOGR(shape_path_CB10, shape_name_CB10)
+#shape_path_CB10 <- 
+#shape_name_CB10 <- "campbuilds_2010_100909"
+shape_extent_CB10 <- readOGR(".\\arc\\gis_data\\camp_buildings$data\\Camp Buildings", "campbuilds_2010_100909")
 
 #plot Camp Buildings 2010
 plot(shape_extent_CB10,  col=terrain.colors(10),
