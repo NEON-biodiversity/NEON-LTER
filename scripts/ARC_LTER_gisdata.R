@@ -14,6 +14,7 @@ library(rgdal)
 library(ggplot2)
 library (ggmap)
 library (ggsn)
+library(gridExtra)
 
 #import Camp Buildings 2010 shapefiles
 CB10 <- readOGR(".\\arc\\gis_data\\camp_buildings$data\\Camp Buildings", "campbuilds_2010_100909")
@@ -214,10 +215,13 @@ plot(mapCamp10, add=TRUE)
 #Adding titles
 title(main="Camp Buildings 2010 - Alaska Field Site", xlab="Longitude", ylab="Latitude")
 ###############################################################################################
-#Google Base Maps
+
+#Title: Google Base Maps
+#Source: Copied from Beth Gerstner's Generating google maps
+#Date: 5 June 2018
+
 ##Extent of Toolik Field Station
 ##NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
-
 #Obtain basemap of the Arctic field site through google maps 
 #(can also generate map types "roadmap", "terrain", "satellite", "hybrid")
 
@@ -234,11 +238,48 @@ ggplot(data = mapAnaktuvukBurnPerim, aes(x = long, y = lat, group = group)) + ge
 mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
 
 #Generate a full map with both the google map, polygon, north arrow and scale bar.
-ggmap(arctic_map) + 
+Burns<-ggmap(arctic_map) + 
   geom_polygon(aes(x = long, y = lat, group = group), 
                data = mapAnaktuvukBurnPerim.f,
                alpha = 0.8, 
                color = "blue",
-               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
+               size = 0.2) + xlab("Longitude")+ ylab("Latitude") 
+               + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ 
+               theme(plot.title = element_text(hjust = .5)) + 
+               scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
 + north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1)
+####################################################################################
+#Second overlay onto Arctic Google Map
+#Cameo Chilcutt
+# 5 June 2018
+
+arctic_map_Trails <- get_map(location = c(lon = -150.5, lat = 69.3),
+                      color = "color",
+                      source = "google",
+                      maptype = "terrain",
+                      zoom = 7)
+
+#Visualize the shapefile and make sure it loaded in correctly
+ggplot(data = mapTrails, aes(x = long, y = lat, group = group)) + geom_path()
+
+#Use the function 'fortify' to turn this shapefile into a dataframe so it's easy to plot on map
+mapTrails.f = fortify(mapTrails)
+
+#Generate a full map with both the google map, polygon, north arrow and scale bar.
+Trails<-ggmap(arctic_map_Trails) + 
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               data = mapTrails.f,
+               alpha = 0.8, 
+               color = "green",
+               size = 0.2) + xlab("Longitude")+ ylab("Latitude") 
++ ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ 
+  theme(plot.title = element_text(hjust = .5)) + 
+  scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
++ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1)
+
+########################################################################################
+#Plot ggmaps side by side
+grid.arrange(Trails, Burns, ncol =2)
+###########################################################################################
+#Merge ggmaps
 
