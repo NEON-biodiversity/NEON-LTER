@@ -47,6 +47,19 @@ ggmap(arctic_map) +
                alpha = 0.8, 
                color = "blue",
                size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
-+ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1)
++ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1) 
 
+##To add multiple shapefiles do the same steps as all of the above except for the last step (generating the full map).
+##Instead use the code below for that step:
+
+ggmap(arctic_map) + 
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               data = building_extent.f,
+               alpha = 0.8, 
+               color = "black", 
+               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
+               data = burn_extent.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+               alpha = 0.8, 
+               color = "blue",
+               size = 0.2) 
 
