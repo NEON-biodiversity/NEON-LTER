@@ -1,0 +1,21 @@
+# Set working directory to folder where NEON data is stored
+setwd("C:/Users/Kyra/Documents/Harvard/data/Field_Data")
+
+NEON_files <- list.files()
+
+# Enter site names in "row_1"
+row_1 <- c(rep("HF", times=6), rep("KP", times=6))
+# Enter taxa names in "row_2"
+row_2 <- c("Taxa 1", "Taxa 2")
+row_3 <- c(1:12)
+plots_matrix <- cbind(row_1,row_2,row_3)
+
+for (k in 1:length(NEON_files)) {
+  taxa <- read.csv(NEON_files[k], header = TRUE)
+  temp_plot_id <- taxa$plotID
+  temp_plot_id <- as.character(taxa$plotID)
+  plot_ids <- length(unique(temp_plot_id))
+  plots_matrix[k,3] <- plot_ids
+}
+colnames(plots_matrix) <- c("Site","Dataset Taxon","#Plots")
+plots_matrix
