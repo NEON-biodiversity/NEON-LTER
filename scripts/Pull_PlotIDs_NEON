@@ -1,5 +1,5 @@
 # Set working directory to folder where NEON data is stored
-setwd("C:/Users/Kyra/Documents/Harvard/data/Field_Data")
+setwd("G:/NEON_LTER_2018/data/raw_data/neon")
 
 NEON_files <- list.files()
 
