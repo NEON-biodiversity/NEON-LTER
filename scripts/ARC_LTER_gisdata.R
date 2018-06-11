@@ -31,7 +31,7 @@ mapCamp10
 CB13 <- readOGR(".\\arc\\gis_data\\camp_buildings_2013$data", "Camp_Buildings_2013")
 
 #plot Camp Buildings 2013
-plot(B13, col=rainbow(10),
+plot(CB13, col=rainbow(10),
      alpha=1,
      legend=F, main="Camp Buildings 2013")
 
@@ -75,17 +75,22 @@ maptoolikpoly<-spTransform(Hydtoolpoly, CRS("+proj=longlat +ellps=WGS84 +datum=W
 plot(maptoolikpoly)
 maptoolikpoly
 
-#import research_plots_2009$data **Not Working, Trying to fix**
-#shape_path_5 <- "C:\\Users\\Cameo Chilcutt\\Documents\\NEON\\research_plots_2009$data"
-#shape_name_5 <- "Research_Plots_2009_NAD83_UTM_100504"
-#shape_extent_5 <- readOGR(shape_path_5, shape_name_5)
+#import research_plots_2009$data  **Issues with shapefile**
+Research_plots <- readOGR(".\\arc\\gis_data\\research_plots_2009$data", "Research_Plots_2009_NAD83_UTM_100504")
+Research_plots
+summary(Research_plots)
+class(Research_plots)
+
+#Reprojection
+#mapResearchplots<-spTransform(Research_plots, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+#plot(mapResearchplots)
+#mapResearchplots
 
 #plot research_plots
-#plot(shape_extent_5,  col=grey(1:100/100), legend=FALSE, main="Research Plots 2009")
+#plot(Research_plots, col=heat.colors(1), alpha=1, legend=F, main="Research Plots Toolik")
 
 #import roads_trails$data
 Roads<- readOGR(".\\arc\\gis_data\\roads_trails$data", "transport_100423")
-
 
 #plot roads_trails$data
 plot(Roads, col=cm.colors(10), alpha=1, legend=F, main="Road_Trails")
