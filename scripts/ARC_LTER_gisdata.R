@@ -27,6 +27,9 @@ mapCamp10<-spTransform(CB10, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapCamp10)
 mapCamp10
 
+#fortify for mapping
+mapCamp10.f = fortify(mapCamp10)
+
 #import Camp Buildings 2013
 CB13 <- readOGR(".\\arc\\gis_data\\camp_buildings_2013$data", "Camp_Buildings_2013")
 
@@ -40,6 +43,9 @@ mapCamp13<-spTransform(CB13, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapCamp13)
 mapCamp13
 
+#fortify for mapping
+mapCamp13.f = fortify(mapCamp13)
+
 #import Gravel Pads
 GravelPads <- readOGR(".\\arc\\gis_data\\gravel_pads$data", "gravel_pads")
 
@@ -50,6 +56,9 @@ plot(GravelPads, col=grey(1:100/100), legend=FALSE, main="Gravel Pads")
 map_GP<-spTransform(GravelPads, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(map_GP)
 map_GP
+
+#fortify for mapping
+map_GP.f = fortify(map_GP)
 
 #import hyd_toolik_arc
 Hydtoolarc <- readOGR(".\\arc\\gis_data\\hyd_toolik_arc_101111$data", "hyd_toolik_arc101111")
@@ -64,6 +73,9 @@ maptoolikarc<-spTransform(Hydtoolarc, CRS("+proj=longlat +ellps=WGS84 +datum=WGS
 plot(maptoolikarc)
 maptoolikarc
 
+#fortify for mapping
+maptoolikarc.f = fortify(maptoolikarc)
+
 #import hyd_toolik_poly
 Hydtoolpoly<- readOGR(".\\arc\\gis_data\\hyd_toolik_poly101111$data", "hyd_toolik_poly101111")
 
@@ -74,6 +86,9 @@ plot(Hydtoolpoly, col=cm.colors(10), alpha=1, legend=F, main="Hyd_toolik_poly")
 maptoolikpoly<-spTransform(Hydtoolpoly, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(maptoolikpoly)
 maptoolikpoly
+
+#fortify for mapping
+maptoolikpoly.f = fortify(maptoolikpoly)
 
 #import research_plots_2009$data  **Issues with shapefile**
 Research_plots <- readOGR(".\\arc\\gis_data\\research_plots_2009$data", "Research_Plots_2009_NAD83_UTM_100504")
@@ -89,6 +104,9 @@ class(Research_plots)
 #plot research_plots
 #plot(Research_plots, col=heat.colors(1), alpha=1, legend=F, main="Research Plots Toolik")
 
+#fortify for mapping
+#mapResearchplots.f = fortify(mapResearchplots)
+
 #import roads_trails$data
 Roads<- readOGR(".\\arc\\gis_data\\roads_trails$data", "transport_100423")
 
@@ -100,6 +118,9 @@ mapTrails<-spTransform(Roads, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapTrails)
 mapTrails
 
+#fortify for mapping
+mapTrails.f = fortify(mapTrails)
+
 #import taps$data
 Taps<- readOGR(".\\arc\\gis_data\\taps$data", "pipeline_proj")
 
@@ -110,6 +131,9 @@ plot(Taps, col=heat.colors(5), alpha=1, legend=F, main="Taps")
 maptaps<-spTransform(Taps, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(maptaps)
 maptaps
+
+#fortify for mapping
+maptaps.f = fortify(maptaps)
 
 #import toolik_rna$data
 ToolikRNA <- readOGR(".\\arc\\gis_data\\toolik_rna$data", "Toolik_RNA")
@@ -123,6 +147,9 @@ plot(ToolikRNA, col=terrain.colors(8),
 mapToolik<-spTransform(ToolikRNA, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapToolik)
 mapToolik
+
+#fortify for mapping
+mapToolik.f = fortify(mapToolik)
 
 #import watersheds_research
 CrumpWater <- readOGR(".\\arc\\gis_data\\watersheds_research$data\\Watersheds_Research", "Crump_Watershed")
@@ -162,6 +189,16 @@ plot(mapOksrukuyikWater)
 plot(mapThermokarstWater)
 plot(mapToolikinletWater)
 
+#fortify for mapping
+mapCrumpWater.f = fortify(mapCrumpWater)
+mapImnaviatWater.f = fortify(mapImnaviatWater)
+mapKlingWater.f = fortify(mapKlingWater)
+mapKuparukWater.f = fortify(mapKuparukWater)
+mapLostLakeWater.f = fortify(mapLostLakeWater)
+mapOksrukuyikWater.f = fortify(mapOksrukuyikWater)
+mapThermokarstWater.f = fortify(mapThermokarstWater)
+mapToolikinletWater.f = fortify(mapToolikinletWater)
+
 #100fcont_uk
 fcont_uk<-readOGR(".\\arc\\gis_data\\100fcont_uk$data", "100fcont_uk")
 plot(fcont_uk, col=grey(1:100/100), main="fcont_uk")
@@ -179,6 +216,9 @@ plot(AnakBurnLakes, col=heat.colors (10), main="Burn_Lakes\n NEON Harvard Forest
 mapAnakBurnLakes<-spTransform(AnakBurnLakes, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapAnakBurnLakes)
 
+#fortify for mapping
+mapAnakBurnLakes.f = fortify(mapAnakBurnLakes)
+
 #Anak_Burn_Perim_Rocha
 AnakBurnPerimRocha<-readOGR(".\\arc\\gis_data\\anak_burn_perim_rocha$data", "Anak_Burn_Perim_Rocha")
 plot(AnakBurnPerimRocha, col=grey(1:100/100), main="Anak_Burn_Perim\n NEON Harvard Forest Field Site")
@@ -186,6 +226,9 @@ plot(AnakBurnPerimRocha, col=grey(1:100/100), main="Anak_Burn_Perim\n NEON Harva
 #Reprojection
 mapAnakBurnPerimRocha<-spTransform(AnakBurnPerimRocha, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapAnakBurnPerimRocha)
+
+#fortify for mapping
+mapAnakBurnPerimRocha.f = fortify(mapAnakBurnPerimRocha)
 
 #Anak_Burn_Rivers
 AnakBurnRivers<-readOGR(".\\arc\\gis_data\\anak_burn_rivers$data", "Anaktuvuk_Burn_Rivers")
@@ -195,6 +238,9 @@ plot(AnakBurnRivers, col=grey(1:100/100), main="Anak_Burn_River\n NEON Harvard F
 mapAnakBurnRivers<-spTransform(AnakBurnRivers, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapAnakBurnRivers)
 
+#fortify for mapping
+mapAnakBurnRivers.f = fortify(mapAnakBurnRivers)
+
 #Anaktuvuk_Burn_Perim
 AnaktuvukBurnPerim<-readOGR(".\\arc\\gis_data\\anaktuvuk_burn_perim$data", "progression_perimeters_0822-0930")
 plot(AnaktuvukBurnPerim, col=grey(1:100/100), main="Progression_perimeters\n NEON Harvard Forest Field Site")
@@ -202,6 +248,9 @@ plot(AnaktuvukBurnPerim, col=grey(1:100/100), main="Progression_perimeters\n NEO
 #Reprojection
 mapAnaktuvukBurnPerim<-spTransform(AnaktuvukBurnPerim, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(mapAnaktuvukBurnPerim)
+
+#fortify for mapping
+mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
 ############################################################################################################
 #BaseMap of Arctic Field Site
 Arctic_Map<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\nasa_modis_2013$data\\alaska_tmo_2013168_geo.tif")
@@ -239,10 +288,7 @@ arctic_map <- get_map(location = c(lon = -150.5, lat = 69.3),
 #Visualize the shapefile and make sure it loaded in correctly
 ggplot(data = mapAnaktuvukBurnPerim, aes(x = long, y = lat, group = group)) + geom_path()
 
-#Use the function 'fortify' to turn this shapefile into a dataframe so it's easy to plot on map
-mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
-
-#Generate a full map with both the google map, polygon, north arrow and scale bar.
+#Generate a full map with both the google map, polygon, north arrow and scale bar.Use fortified version of data file.
 Burns<-ggmap(arctic_map) + 
   geom_polygon(aes(x = long, y = lat, group = group), 
                data = mapAnaktuvukBurnPerim.f,
@@ -267,10 +313,7 @@ arctic_map_Trails <- get_map(location = c(lon = -150.5, lat = 69.3),
 #Visualize the shapefile and make sure it loaded in correctly
 ggplot(data = mapTrails, aes(x = long, y = lat, group = group)) + geom_path()
 
-#Use the function 'fortify' to turn this shapefile into a dataframe so it's easy to plot on map
-mapTrails.f = fortify(mapTrails)
-
-#Generate a full map with both the google map, polygon, north arrow and scale bar.
+#Generate a full map with both the google map, polygon, north arrow and scale bar. Use fortified version of data file.
 Trails<-ggmap(arctic_map_Trails) + 
   geom_polygon(aes(x = long, y = lat, group = group), 
                data = mapTrails.f,
@@ -286,5 +329,58 @@ Trails<-ggmap(arctic_map_Trails) +
 #Plot ggmaps side by side
 grid.arrange(Trails, Burns, ncol =2)
 ###########################################################################################
-#Merge ggmaps
+#Create Basemap
+#code from Generating_google_basemaps by Beth Gerstner
 
+#Load in libraries
+library (ggmap) # generates google maps
+library(rgdal) # read in shapefile
+library(ggplot2) # visualize shapefile
+library (ggsn) # add scale bar and north arrow
+
+##Extent of Toolik Field Station
+##NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
+
+#Obtain basemap of the Arctic field site through google maps 
+#(can also generate map types "roadmap", "terrain", "satellite", "hybrid")
+
+arctic_map1 <- get_map(location = c(lon = -150.5, lat = 69.3),
+                      color = "color",
+                      source = "google",
+                      maptype = "terrain",
+                      zoom = 7)
+
+
+#Visualize the shapefile and make sure it loaded in correctly
+ggplot(data = mapAnakBurnPerimRocha, aes(x = long, y = lat, group = group)) + geom_path()
+
+#Generate a full map with both the google map, polygon, north arrow and scale bar. Always use fortified version of data file.
+ggmap(arctic_map1) + 
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               data = mapAnakBurnPerimRocha.f,
+               alpha = 0.8, 
+               color = "blue",
+               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
++ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1) 
+
+##To add multiple shapefiles do the same steps as all of the above except for the last step (generating the full map).
+##Instead use the code below for that step:
+
+basemap1<- ggmap(arctic_map1) + 
+  geom_polygon(aes(x = long, y = lat, group = group), 
+               data = mapAnakBurnPerimRocha.f,
+               alpha = 0.8, 
+               color = "black", 
+               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
+data = mapAnakBurnLakes.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+  alpha = 0.8, 
+  color = "blue",
+  size = 0.2) 
+basemap1
+
+# overlay the AnakBurnRivers on top of the basemap1 to complete burn basemap
+plot(mapAnakBurnRivers.f,
+     col=rainbow(100),
+     alpha=0.4,
+     add=T,
+     legend=F)
