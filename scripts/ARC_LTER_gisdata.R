@@ -267,11 +267,11 @@ library (ggsn) # add scale bar and north arrow
 #Obtain basemap of the Arctic field site through google maps 
 #(can also generate map types "roadmap", "terrain", "satellite", "hybrid")
 
-arctic_map1 <- get_map(location = c(lon = -150.5, lat = 69.3),
+arctic_map1 <- get_map(location = c(lon = -149.5, lat = 69.3),
                       color = "color",
                       source = "google",
-                      maptype = "terrain",
-                      zoom = 8)
+                      maptype = "satellite",
+                      zoom = 7)
 
 
 #Visualize the shapefile and make sure it loaded in correctly
@@ -280,21 +280,72 @@ ggplot(data = mapAnakBurnPerimRocha, aes(x = long, y = lat, group = group)) + ge
 ##To add multiple shapefiles do the same steps as all of the above except for the last step (generating the full map).
 ##Instead use the code below for that step:
 
-basemap1<- ggmap(arctic_map1) + 
+basemap<- ggmap(arctic_map1) + 
   geom_polygon(aes(x = long, y = lat, group = group), data = mapAnakBurnRivers.f, 
-               alpha = 0.1, 
-               color = "orange",
-               size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
-               data = mapAnakBurnPerimRocha.f,
-               alpha = 0.5, 
-               color = "black", 
-               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
-               data = mapAnakBurnLakes.f,
-               alpha = 0.5, 
-               color = "blue", 
-               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
-              alpha = 0.3, 
-              color = "green",
-              size = 0.2) 
-basemap1
+   alpha = 0, 
+   color = "seagreen3",
+   size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
+   data = mapAnakBurnPerimRocha.f,
+   alpha = 0, 
+   color = "red", 
+   size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
+   data = mapAnakBurnLakes.f,
+   alpha = 0, 
+   color = "darkorchid4", 
+   size = 0.2) + xlab("Longitude")+ ylab("Latitude") + geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+   alpha = 0, 
+  color = "orangered1",
+   size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+alpha = 0, 
+color = "orange2",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapCamp10.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+              alpha = 0.8, 
+              color = "white",
+              size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapCamp13.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+alpha = 0.8, 
+color = "black",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = map_GP.f, 
+alpha = 0, 
+color = "grey",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapCrumpWater.f, 
+alpha = 0, 
+color = "cyan4",
+size = 0.2)+ geom_polygon(aes(x = long, y = lat, group = group), data = mapImnaviatWater.f, 
+alpha = 0, 
+color = "burlywood2",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapKlingWater.f, 
+alpha = 0, 
+color = "green4",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapKuparukWater.f, 
+alpha = 0, 
+color = "palevioletred4",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapLostLakeWater.f, 
+alpha = 0, 
+color = "yellowgreen",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapOksrukuyikWater.f, 
+alpha = 0, 
+color = "gold1",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = maptaps.f, 
+alpha = 0, 
+color = "coral4",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapThermokarstWater.f, 
+alpha = 0, 
+color = "deepskyblue1",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapToolik.f, 
+alpha = 0, 
+color = "deeppink4",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = maptoolikarc.f, 
+alpha = 0, 
+color = "indianred2",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = maptoolikpoly.f, 
+alpha = 0, 
+color = "magenta4",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapToolikinletWater.f, 
+alpha = 0, 
+color = "mediumblue",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapTrails.f, 
+alpha = 0, 
+color = "lightsteelblue3",
+size = 0.2) 
+basemap
 
