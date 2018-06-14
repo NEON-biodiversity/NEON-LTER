@@ -5,9 +5,9 @@
 # Date:			  4 June 2018
 
 # Set working directory to where you house "data" directory (with subdirectories raw_data, final_data, scripts, output)
+
 setwd("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data")
 rm(list = ls())
-
 #libraries
 library(raster)
 library(rgdal)
@@ -210,7 +210,7 @@ plot(fcont_uk, col=grey(1:100/100), main="fcont_uk")
 
 #Anak_Burn_Lakes
 AnakBurnLakes<-readOGR(".\\arc\\gis_data\\anak_burn_lakes$data", "Anaktuvuk_Burn_Lakes")
-plot(AnakBurnLakes, col=heat.colors (10), main="Burn_Lakes\n NEON Harvard Forest Field Site")
+plot(AnakBurnLakes, col=heat.colors (10), main="Burn_Lakes")
 
 #Reprojection
 mapAnakBurnLakes<-spTransform(AnakBurnLakes, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
@@ -221,7 +221,7 @@ mapAnakBurnLakes.f = fortify(mapAnakBurnLakes)
 
 #Anak_Burn_Perim_Rocha
 AnakBurnPerimRocha<-readOGR(".\\arc\\gis_data\\anak_burn_perim_rocha$data", "Anak_Burn_Perim_Rocha")
-plot(AnakBurnPerimRocha, col=grey(1:100/100), main="Anak_Burn_Perim\n NEON Harvard Forest Field Site")
+plot(AnakBurnPerimRocha, col=grey(1:100/100), main="Anak_Burn_Perim")
 
 #Reprojection
 mapAnakBurnPerimRocha<-spTransform(AnakBurnPerimRocha, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
@@ -232,7 +232,7 @@ mapAnakBurnPerimRocha.f = fortify(mapAnakBurnPerimRocha)
 
 #Anak_Burn_Rivers
 AnakBurnRivers<-readOGR(".\\arc\\gis_data\\anak_burn_rivers$data", "Anaktuvuk_Burn_Rivers")
-plot(AnakBurnRivers, col=grey(1:100/100), main="Anak_Burn_River\n NEON Harvard Forest Field Site")
+plot(AnakBurnRivers, col=heat.colors (6), main="Anak_Burn_River")
 
 #Reprojection
 mapAnakBurnRivers<-spTransform(AnakBurnRivers, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
@@ -243,7 +243,7 @@ mapAnakBurnRivers.f = fortify(mapAnakBurnRivers)
 
 #Anaktuvuk_Burn_Perim
 AnaktuvukBurnPerim<-readOGR(".\\arc\\gis_data\\anaktuvuk_burn_perim$data", "progression_perimeters_0822-0930")
-plot(AnaktuvukBurnPerim, col=grey(1:100/100), main="Progression_perimeters\n NEON Harvard Forest Field Site")
+plot(AnaktuvukBurnPerim, col=grey(1:100/100), main="Progression_perimeters")
 
 #Reprojection
 mapAnaktuvukBurnPerim<-spTransform(AnaktuvukBurnPerim, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
@@ -252,83 +252,6 @@ plot(mapAnaktuvukBurnPerim)
 #fortify for mapping
 mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
 ############################################################################################################
-#BaseMap of Arctic Field Site
-Arctic_Map<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\nasa_modis_2013$data\\alaska_tmo_2013168_geo.tif")
-plot(Arctic_Map)
-#########################################################################################
-#Clipping satellite image to size of Toolik research area
-toolik <- crop(Arctic_Map, mapToolik)
-plot(toolik)
-#########################################################################################
-#Setting the extent
-NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
-extent(toolik)<- NewExtent
-plot(toolik)
-plot(mapCamp10, add=TRUE)
-################################################################################################
-#Adding titles
-title(main="Camp Buildings 2010 - Alaska Field Site", xlab="Longitude", ylab="Latitude")
-###############################################################################################
-
-#Title: Google Base Maps
-#Source: Copied from Beth Gerstner's Generating google maps
-#Date: 5 June 2018
-
-##Extent of Toolik Field Station
-##NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
-#Obtain basemap of the Arctic field site through google maps 
-#(can also generate map types "roadmap", "terrain", "satellite", "hybrid")
-
-arctic_map <- get_map(location = c(lon = -150.5, lat = 69.3),
-                      color = "color",
-                      source = "google",
-                      maptype = "terrain",
-                      zoom = 7)
-
-#Visualize the shapefile and make sure it loaded in correctly
-ggplot(data = mapAnaktuvukBurnPerim, aes(x = long, y = lat, group = group)) + geom_path()
-
-#Generate a full map with both the google map, polygon, north arrow and scale bar.Use fortified version of data file.
-Burns<-ggmap(arctic_map) + 
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               data = mapAnaktuvukBurnPerim.f,
-               alpha = 0.8, 
-               color = "blue",
-               size = 0.2) + xlab("Longitude")+ ylab("Latitude") 
-               + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ 
-               theme(plot.title = element_text(hjust = .5)) + 
-               scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
-+ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1)
-####################################################################################
-#Second overlay onto Arctic Google Map
-#Cameo Chilcutt
-# 5 June 2018
-
-arctic_map_Trails <- get_map(location = c(lon = -150.5, lat = 69.3),
-                      color = "color",
-                      source = "google",
-                      maptype = "terrain",
-                      zoom = 7)
-
-#Visualize the shapefile and make sure it loaded in correctly
-ggplot(data = mapTrails, aes(x = long, y = lat, group = group)) + geom_path()
-
-#Generate a full map with both the google map, polygon, north arrow and scale bar. Use fortified version of data file.
-Trails<-ggmap(arctic_map_Trails) + 
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               data = mapTrails.f,
-               alpha = 0.8, 
-               color = "green",
-               size = 0.2) + xlab("Longitude")+ ylab("Latitude") 
-+ ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ 
-  theme(plot.title = element_text(hjust = .5)) + 
-  scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
-+ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1)
-
-########################################################################################
-#Plot ggmaps side by side
-grid.arrange(Trails, Burns, ncol =2)
-###########################################################################################
 #Create Basemap
 #code from Generating_google_basemaps by Beth Gerstner
 
@@ -348,39 +271,30 @@ arctic_map1 <- get_map(location = c(lon = -150.5, lat = 69.3),
                       color = "color",
                       source = "google",
                       maptype = "terrain",
-                      zoom = 7)
+                      zoom = 8)
 
 
 #Visualize the shapefile and make sure it loaded in correctly
 ggplot(data = mapAnakBurnPerimRocha, aes(x = long, y = lat, group = group)) + geom_path()
 
-#Generate a full map with both the google map, polygon, north arrow and scale bar. Always use fortified version of data file.
-ggmap(arctic_map1) + 
-  geom_polygon(aes(x = long, y = lat, group = group), 
-               data = mapAnakBurnPerimRocha.f,
-               alpha = 0.8, 
-               color = "blue",
-               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84")
-+ north2(arctic_map, x = 0.30, y = 0.31, scale = 0.15, symbol = 1) 
-
 ##To add multiple shapefiles do the same steps as all of the above except for the last step (generating the full map).
 ##Instead use the code below for that step:
 
 basemap1<- ggmap(arctic_map1) + 
-  geom_polygon(aes(x = long, y = lat, group = group), 
+  geom_polygon(aes(x = long, y = lat, group = group), data = mapAnakBurnRivers.f, 
+               alpha = 0.1, 
+               color = "orange",
+               size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
                data = mapAnakBurnPerimRocha.f,
-               alpha = 0.8, 
+               alpha = 0.5, 
                color = "black", 
                size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Digitized Burn Perimeter")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -153.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=4, st.dist = .6, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
-data = mapAnakBurnLakes.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
-  alpha = 0.8, 
-  color = "blue",
-  size = 0.2) 
+               data = mapAnakBurnLakes.f,
+               alpha = 0.5, 
+               color = "blue", 
+               size = 0.2) + xlab("Longitude")+ ylab("Latitude") + geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
+              alpha = 0.3, 
+              color = "green",
+              size = 0.2) 
 basemap1
 
-# overlay the AnakBurnRivers on top of the basemap1 to complete burn basemap
-plot(mapAnakBurnRivers.f,
-     col=rainbow(100),
-     alpha=0.4,
-     add=T,
-     legend=F)
