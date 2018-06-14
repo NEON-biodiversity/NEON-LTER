@@ -255,11 +255,7 @@ mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
 #Create Basemap
 #code from Generating_google_basemaps by Beth Gerstner
 
-#Load in libraries
-library (ggmap) # generates google maps
-library(rgdal) # read in shapefile
-library(ggplot2) # visualize shapefile
-library (ggsn) # add scale bar and north arrow
+
 
 ##Extent of Toolik Field Station
 ##NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
@@ -283,31 +279,31 @@ ggplot(data = mapAnakBurnPerimRocha, aes(x = long, y = lat, group = group)) + ge
 basemap<- ggmap(arctic_map1) + 
   geom_polygon(aes(x = long, y = lat, group = group), data = mapAnakBurnRivers.f, 
    alpha = 0, 
-   color = "tomato",
+   color = "steelblue2",
    size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
    data = mapAnakBurnPerimRocha.f,
    alpha = 0, 
-   color = "tomato3", 
-   size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Field Station: Disturbance Patterns")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -152.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .4, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
+   color = "indianred4", 
+   size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Lake Field Station: Disturbance Patterns")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -152.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .4, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
    data = mapAnakBurnLakes.f,
    alpha = 0, 
-   color = "tomato", 
+   color = "indianred3", 
    size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
 data = mapAnaktuvukBurnPerim.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
 alpha = 0, 
-color = "tomato",
+color = "indianred3",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapToolik.f, 
   alpha = 0, 
    color = "darkorchid",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = maptoolikarc.f, 
 alpha = 0, 
-color = "burlywood4",
+color = "steelblue2",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = maptoolikpoly.f, 
 alpha = 0, 
-color = "burlywood1",
+color = "steelblue2",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapToolikinletWater.f, 
 alpha = 0, 
-color = "lightcoral",
+color = "green",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapCamp10.f, ## <----for this line insert the name of the shapefile you want to add (this has to have gone through the same steps as above for the other shapefile)
 alpha = 0.8, 
 color = "white",
@@ -343,7 +339,7 @@ alpha = 0.2,
 color = "ivory",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), data = mapTrails.f, 
 alpha = 0, 
-color = "bisque4",
+color = "plum4",
 size = 0.2) 
 
 basemap
