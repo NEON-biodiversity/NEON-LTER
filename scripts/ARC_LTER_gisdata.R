@@ -252,7 +252,210 @@ plot(mapAnaktuvukBurnPerim)
 #fortify for mapping
 mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
 ############################################################################################################
-#Create Basemap
+#Creating a basemap with a shapefile
+# 15 June 18
+
+#alaskamap <- readOGR(".//arc//gis_data//alaskamap.shp")
+#plot(alaskamap, main="Alaska LTER Toolik Lake Station")
+#toolikmap <- readOGR(".//arc//gis_data//toolmap.shp")
+#plot(toolikmap, main="Toolik Lake Station: Alaska LTER")
+
+#elevation<- raster("G://My Drive//Cloud_forest_SROP//data//Elevation_srtm//srtm_1km.tif")
+#elevation
+#plot(elevation)
+
+#elevation_crop <- mask(elevation, toolikmap)
+#extent <- setExtent(elevation_crop, )
+
+#bb<- extent(68.8, 150.7, 12.54, 17.03)
+#extent(elevation_crop) <- bb
+#tool <-setExtent (elevation_crop, bb)
+#plot(tool)
+
+alaska1<-raster("G:/My Drive/NEON_LTER_2018/data/raw_data/arc/gis_data/nasa_modis_2013$data/alaska_tmo_2013168_geo.tif")
+plot(alaska1)
+
+alaska_crop<- crop(alaska1, mapToolik)
+plot(alaska_crop)
+
+#Clipping satellite image to size of Toolik research area
+toolik_crop <- crop(alaska1, mapToolik)
+plot(toolik_crop)
+#########################################################################################
+#Setting the extent
+NewExtent <-extent(-152.86, -145.37, 67.72, 69.77)
+extent(toolik_crop)<- NewExtent
+plot(toolik_crop, col= cm.colors(7), main="Alaska LTER: Toolik Lake Station", legend=F)
+
+
+# overlay shp files on alaskamap
+plot(mapAnaktuvukBurnPerim,
+     col="red",
+     alpha=0.8,
+     add=T,
+     legend=T)
+
+plot(mapAnakBurnLakes,
+     col="red",
+     alpha=0.8,
+     add=T,
+     legend=T)
+
+plot(mapAnakBurnPerimRocha,
+     col="red",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapAnakBurnRivers,
+     col="red",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapTrails,
+     col="grey",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapCamp10,
+     col="white",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapCamp13,
+     col="white"),
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapCrumpWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(map_GP,
+     col="grey",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(maptoolikarc,
+     col="pink",
+     alpha=0,
+     add=T,
+     legend=T)
+
+plot(maptoolikpoly,
+     col= "pink"),
+     alpha=0,
+     add=T,
+     legend=T)
+
+plot(mapImnaviatWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapKlingWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapKuparukWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapLostLakeWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapOksrukuyikWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(maptaps,
+     col="gold1",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapThermokarstWater,
+     col="green",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+plot(mapToolikinletWater,
+     col="blue",
+     alpha=0.4,
+     add=T,
+     legend=T)
+
+legend(-165,74, legend=c("Reference Locations", "1= Choco, Colombia, 100 m", "2= Palmira, Colombia, 1000 m", "3= San Jose de Alluriquin, Ecuador, 780 m", 
+                        "4= Cotopaxi National Park, Ecuador, 4700 m", "5= Quito, Ecuador, 2700 m"),
+       col=c("dark green"), cex=0.50, pch=c(15,173,173,173,173,173))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Create Basemap with google maps
 #code from Generating_google_basemaps by Beth Gerstner
 
 
@@ -343,3 +546,29 @@ color = "plum4",
 size = 0.2) 
 
 basemap
+
+###################################################################################
+#Creating a legend for basemap
+legend<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\Legend.csv")
+# create a blank ggplot theme
+theme_opts <- list(theme(panel.grid.minor = element_blank(),
+                         panel.grid.major = element_blank(),
+                         panel.background = element_blank(),
+                         plot.background = element_blank(),
+                         panel.border = element_blank(),
+                         axis.line = element_blank(),
+                         axis.text.x = element_blank(),
+                         axis.text.y = element_blank(),
+                         axis.ticks = element_blank(),
+                         axis.title.x = element_blank(),
+                         axis.title.y = element_blank(),
+                         legend.position="right",
+                         plot.title = element_text(size=16)))
+
+mapplot<-ggplot() + 
+  geom_polygon(data = legend, aes(x=long, y = lat, group = group), fill = NA, colour="darkgray", size=0.25)+
+  geom_map(data=data,map=basemap,aes(map_id=country, x=lon, y=lat),fill = data$color, colour = "gray") +
+  coord_equal() +
+  theme_opts   
+
+mapplot + theme(legend.position = "right")
