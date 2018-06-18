@@ -582,6 +582,9 @@ basemap_zoomed
 #NEON data overlay
 # R functions for pulling NEON data from the server
 
+library(httr)
+library(jsonlite)
+
 display_neon_filenames <- function(productCode) {
   require(httr)
   require(jsonlite)
@@ -713,13 +716,13 @@ library(ggplot2)
     group_by(plotID) %>%
     summarize(richness = length(unique(taxonID))))
 
+subset(bird_data, siteID == 'TOOL')$namedLocation
+
 # We have 13 plots with varying species richness. Unfortunately, the coordinates of the plots are not included in the bird data. The plot metadata must be pulled separately from the API for each site. Here, I get the locations for all bird survey grids at Oak Ridge, then join them with the richness data.
 
-bird_arc_locations <- get_site_locations(siteID = 'TOOL', what = 'bird')
+bird_arc_locations <- get_site_locations(siteID = 'TOOL', what = 'basePlot')
 
 # The location names are given as a long string so we need to extract the substring before the first period to join the locations with the richness values. We are using the base R function `strsplit()` to split the string on each period, and the `map_chr()` function from the package `purrr` to pull the first item out of each list element returned by `strsplit()`. Since `strsplit()` returns a list, `map_chr()` helps us transform the result of splitting the string back into a vector that becomes a data frame column.
-
-bird_arc_locations$namedLocation[1:3]
 
 library(purrr)
 
@@ -731,9 +734,10 @@ bird_arc <- bird_arc_locations %>%
 dim(bird_arc)
 names(bird_arc)
 
-# There are now a lot of useful spatial columns along with richness for each of the bird plots at Oak Ridge. Let's make a map with each plot represented by a point colored by the bird species richness there, and labeled with the elevation rounded to the nearest meter for good measure. 
+# There are now a lot of useful spatial columns along with richness for each of the bird plots at Toolik. Let's make a map with each plot represented by a point colored by the bird species richness there, and labeled with the elevation rounded to the nearest meter for good measure. 
 
-ggplot(bird_ornl, 
+
+ggplot(bird_arc, 
        aes(x = locationUtmEasting, y = locationUtmNorthing)) +
   geom_point(aes(color = richness), size = 3) +
   # The vjust argument below moves the text down slightly.
@@ -761,10 +765,10 @@ bird_richness <- site_coordinates %>%
   rename(siteID = locationName) %>%
   right_join(bird_richness)
 
-# Alaska and Puerto Rico are included here; we can get rid of them by filtering on latitude. *This simplifies making the map for now, since including insets for Alaska, etc. adds a lot of nuisance steps to making the map. But never fear, it can be done! If there is interest we can add that step to a future version of this tutorial.*
+# Filter out everything that is not Alaska
 
 bird_richness <- bird_richness %>%
-  filter(between(locationDecimalLatitude, 25, 50))
+  filter(between(locationDecimalLatitude, 59, 71))
 
 # Create a map using the built-in US state borders, with site points colored by bird species richness. Use the `coord_map()` function to specify a projection. The Albers equal-area projection with arguments `lat0 = 23` and `lat1 = 30` is ideal for mapping the continental USA. We also use `coord_map()` to specify the range of latitude and longitude to plot.  The `borders('state')` and `borders('world')` elements add the state borders and the borders of Canada and Mexico, respectively.
 
@@ -776,15 +780,102 @@ ggplot(bird_richness,
   scale_fill_gradient(low = 'blue', high = 'red') +
   theme_bw() +
   coord_map(projection = 'albers', 
-            lat0 = 23, 
-            lat1 = 30, 
-            xlim = c(-127, -65), 
-            ylim = c(25,50))
+            lat0 = 58, 
+            lat1 = 71, 
+            xlim = c(-166, -140), 
+            ylim = c(58,71))
+#########################################################################################################################################
+# First, let's make a map of mammal species richness within one of the NEON sites. 
+library(ggplot2)
+
+(mammal_arc <- mammal_data %>% 
+    filter(siteID %in% 'TOOL') %>%
+    group_by(plotID) %>%
+    summarize(richness = length(unique(taxonID))))
+
+subset(mammal_data, siteID == 'TOOL')$namedLocation
+
+# We have 13 plots with varying species richness. Unfortunately, the coordinates of the plots are not included in the mammal data. The plot metadata must be pulled separately from the API for each site. Here, I get the locations for all mammal survey grids at Toolik, then join them with the richness data.
+
+mammal_arc_locations <- get_site_locations(siteID = 'TOOL', what = 'basePlot')
+
+# The location names are given as a long string so we need to extract the substring before the first period to join the locations with the richness values. We are using the base R function `strsplit()` to split the string on each period, and the `map_chr()` function from the package `purrr` to pull the first item out of each list element returned by `strsplit()`. Since `strsplit()` returns a list, `map_chr()` helps us transform the result of splitting the string back into a vector that becomes a data frame column.
+
+library(purrr)
+
+mammal_arc <- mammal_arc_locations %>%
+  mutate(locationName = map_chr(strsplit(locationName, '\\.'), 1)) %>%
+  rename(plotID = locationName) %>%
+  right_join(mammal_arc)
+
+dim(mammal_arc)
+names(mammal_arc)
+
+# There are now a lot of useful spatial columns along with richness for each of the bird plots at Toolik. Let's make a map with each plot represented by a point colored by the bird species richness there, and labeled with the elevation rounded to the nearest meter for good measure. 
+
+
+ggplot(mammal_arc, 
+       aes(x = locationUtmEasting, y = locationUtmNorthing)) +
+  geom_point(aes(color = richness), size = 3) +
+  # The vjust argument below moves the text down slightly.
+  geom_text(aes(label = paste(round(locationElevation), 'm')), vjust = 1.2) +
+  scale_color_gradient(low = 'blue', high = 'red') +
+  theme_bw()
+
+# So we've made a map of how mammal richness varies spatially within the boundaries of the Toolik study site. As an exercise, subset the mammal data for a different site and make a map of a different variable such as the total number of individual mammals observed at each survey grid in a particular year.
+
+## Map of all sites in the contiguous USA
+
+# It might also be interesting to plot mammal richness across the United States. While before we used the projected coordinates provided by NEON, here we can use the latitudes and longitudes, then use the mapping capability of `ggplot2` to draw a map with our preferred projection.
+
+# First, find the species richness at each site by counting the number of unique taxa.
+
+mammal_richness <- mammal_data %>%
+  group_by(siteID) %>%
+  summarize(richness = length(unique(taxonID)))
+
+# Next we need to pull the site centroids in lat-long for all the sites in the mammal richness dataset. We do this by accessing the API again. A function from `purrr` called `map_dfr()` helps us loop through all the sites, get the overall location info, and tidily store it in a single data frame that we can easily join with the richness data frame.
+
+site_coordinates <- map_dfr(mammal_richness$siteID, get_site_locations, what = 'site')
+
+mammal_richness <- site_coordinates %>%
+  rename(siteID = locationName) %>%
+  right_join(mammal_richness)
+
+# Filter out everything that is not Alaska
+
+mammal_richness <- mammal_richness %>%
+  filter(between(locationDecimalLatitude, 59, 71))
+
+# Create a map using the built-in US state borders, with site points colored by bird species richness. Use the `coord_map()` function to specify a projection. The Albers equal-area projection with arguments `lat0 = 23` and `lat1 = 30` is ideal for mapping the continental USA. We also use `coord_map()` to specify the range of latitude and longitude to plot.  The `borders('state')` and `borders('world')` elements add the state borders and the borders of Canada and Mexico, respectively.
+
+ggplot(mammal_richness, 
+       aes(x = locationDecimalLongitude, y = locationDecimalLatitude, fill = richness)) +
+  borders('state') +
+  borders('world') +
+  geom_point(pch = 21, size = 3) +
+  scale_fill_gradient(low = 'blue', high = 'red') +
+  theme_bw() +
+  coord_map(projection = 'albers', 
+            lat0 = 58, 
+            lat1 = 71, 
+            xlim = c(-166, -140), 
+            ylim = c(58,71))
+
+#############################################################################################################################################################################################################################################################################################
+
+
+
+
+
+
+
+
+
 
 # As an exercise, do the same for mammal richness and for elevation.
 
 #############################################################################################################################
-
 # Using NEON data to test hypotheses
 
 ## Bergmann's Rule
