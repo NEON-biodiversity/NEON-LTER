@@ -735,8 +735,6 @@ dim(bird_arc)
 names(bird_arc)
 
 # There are now a lot of useful spatial columns along with richness for each of the bird plots at Toolik. Let's make a map with each plot represented by a point colored by the bird species richness there, and labeled with the elevation rounded to the nearest meter for good measure. 
-
-
 ggplot(bird_arc, 
        aes(x = locationUtmEasting, y = locationUtmNorthing)) +
   geom_point(aes(color = richness), size = 3) +
@@ -772,7 +770,7 @@ bird_richness <- bird_richness %>%
 
 # Create a map using the built-in US state borders, with site points colored by bird species richness. Use the `coord_map()` function to specify a projection. The Albers equal-area projection with arguments `lat0 = 23` and `lat1 = 30` is ideal for mapping the continental USA. We also use `coord_map()` to specify the range of latitude and longitude to plot.  The `borders('state')` and `borders('world')` elements add the state borders and the borders of Canada and Mexico, respectively.
 
-ggplot(bird_richness, 
+birdplot<- ggplot(bird_richness, 
        aes(x = locationDecimalLongitude, y = locationDecimalLatitude, fill = richness)) +
   borders('state') +
   borders('world') +
@@ -785,8 +783,7 @@ ggplot(bird_richness,
             xlim = c(-166, -140), 
             ylim = c(58,71))
 #########################################################################################################################################
-# First, let's make a map of mammal species richness within one of the NEON sites. 
-library(ggplot2)
+# Now, let's make a map of mammal species richness within one of the NEON sites. 
 
 (mammal_arc <- mammal_data %>% 
     filter(siteID %in% 'TOOL') %>%
@@ -795,13 +792,14 @@ library(ggplot2)
 
 subset(mammal_data, siteID == 'TOOL')$namedLocation
 
-# We have 13 plots with varying species richness. Unfortunately, the coordinates of the plots are not included in the mammal data. The plot metadata must be pulled separately from the API for each site. Here, I get the locations for all mammal survey grids at Toolik, then join them with the richness data.
+# We have several plots with varying species richness. 
+#Unfortunately, the coordinates of the plots are not included in the mammal data. 
+#The plot metadata must be pulled separately from the API for each site. 
+#Here, I get the locations for all mammal survey grids at Toolik, then join them with the richness data.
 
 mammal_arc_locations <- get_site_locations(siteID = 'TOOL', what = 'basePlot')
 
 # The location names are given as a long string so we need to extract the substring before the first period to join the locations with the richness values. We are using the base R function `strsplit()` to split the string on each period, and the `map_chr()` function from the package `purrr` to pull the first item out of each list element returned by `strsplit()`. Since `strsplit()` returns a list, `map_chr()` helps us transform the result of splitting the string back into a vector that becomes a data frame column.
-
-library(purrr)
 
 mammal_arc <- mammal_arc_locations %>%
   mutate(locationName = map_chr(strsplit(locationName, '\\.'), 1)) %>%
@@ -849,7 +847,7 @@ mammal_richness <- mammal_richness %>%
 
 # Create a map using the built-in US state borders, with site points colored by bird species richness. Use the `coord_map()` function to specify a projection. The Albers equal-area projection with arguments `lat0 = 23` and `lat1 = 30` is ideal for mapping the continental USA. We also use `coord_map()` to specify the range of latitude and longitude to plot.  The `borders('state')` and `borders('world')` elements add the state borders and the borders of Canada and Mexico, respectively.
 
-ggplot(mammal_richness, 
+mammalplot<- ggplot(mammal_richness, 
        aes(x = locationDecimalLongitude, y = locationDecimalLatitude, fill = richness)) +
   borders('state') +
   borders('world') +
@@ -863,14 +861,9 @@ ggplot(mammal_richness,
             ylim = c(58,71))
 
 #############################################################################################################################################################################################################################################################################################
+# Side by side plot
 
-
-
-
-
-
-
-
+grid.arrange(mammalplot, birdplot, ncol =2)
 
 
 # As an exercise, do the same for mammal richness and for elevation.
