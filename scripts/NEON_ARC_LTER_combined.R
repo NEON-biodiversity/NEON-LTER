@@ -829,15 +829,14 @@ plot(arc1)
 summary(arc1)
 write.csv(arc1,file="arc1.csv", row.names=FALSE)
 ###########################################################################################################
-#Color code points for distance
+#Color code points for distance ***DO NOT USE. TRYING TO FIX!
 # Create new column filled with default colour
 arc1$color = "orange"
 # Set new column values to appropriate colours
-arc1$color[arc1$col_name2>=3]="red"
-arc1$color[arc1$col_name2<=1]="blue"
+arc1$color[arc1$burn_dist0.76>=3]="blue"
+arc1$color[arc1$burn_dist0.60<=1]="red"
 # Plot all points at once, using newly generated colours
 plot(arc1$color,arc1$burn_dist, ylim=c(0,1), xlim=c(0,1), col=arc1$color)
 arc1$color
 arc1$burn_dist
 summary(arc)
->>>>>>> a565f42fd7073c18ea713509275e129ad72082bd
