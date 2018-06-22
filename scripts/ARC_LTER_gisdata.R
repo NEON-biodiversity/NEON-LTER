@@ -278,15 +278,11 @@ plot(alaska1)
 alaska_crop<- crop(alaska1, mapToolik)
 plot(alaska_crop)
 
-#Clipping satellite image to size of Toolik research area
-toolik_crop <- crop(alaska1, mapToolik)
-plot(toolik_crop)
 #########################################################################################
 #Setting the extent
 NewExtent <-extent(-152.86, -145.37, 67.72, 69.77)
 extent(toolik_crop)<- NewExtent
 plot(toolik_crop, col= cm.colors(7), main="Alaska LTER: Toolik Lake Station", legend=F)
-
 
 # overlay shp files on alaskamap
 plot(mapAnaktuvukBurnPerim,
@@ -403,15 +399,10 @@ plot(mapToolikinletWater,
      add=T,
      legend=T)
 
-legend(-165,74, legend=c("Reference Locations", "1= Choco, Colombia, 100 m", "2= Palmira, Colombia, 1000 m", "3= San Jose de Alluriquin, Ecuador, 780 m", 
-                        "4= Cotopaxi National Park, Ecuador, 4700 m", "5= Quito, Ecuador, 2700 m"),
-       col=c("dark green"), cex=0.50, pch=c(15,173,173,173,173,173))
 
 #############################################################################################################################################################################
 #Create Basemap with google maps
 #code from Generating_google_basemaps by Beth Gerstner
-
-
 
 ##Extent of Toolik Field Station
 ##NewExtent<-extent(-149.600, -149.589, 68.625, 68.630)
@@ -865,8 +856,9 @@ mammalplot<- ggplot(mammal_richness,
 
 grid.arrange(mammalplot, birdplot, ncol =2)
 
+##########################################################################################################################################
 
-# As an exercise, do the same for mammal richness and for elevation.
+
 
 #############################################################################################################################
 # Using NEON data to test hypotheses
@@ -929,7 +921,9 @@ mammal_means
 
 ### Visualizing data
 
-# Now that we have the mean value of body mass for each species and each site, let's make a scatterplot to visualize the pattern. We need to get the mean latitude value for each site and join it with our mean mass data frame so that we can plot mass versus latitude. Since all the sites are in the northern hemisphere, all latitude values are positive in the NEON dataset.
+# Now that we have the mean value of body mass for each species and each site, let's make a scatterplot to visualize the pattern. 
+#We need to get the mean latitude value for each site and join it with our mean mass data frame so that we can plot mass versus latitude. 
+#Since all the sites are in the northern hemisphere, all latitude values are positive in the NEON dataset.
 
 latitudes <- mammal_data %>%
   group_by(siteID) %>%
