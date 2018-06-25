@@ -1,10 +1,9 @@
-<<<<<<< HEAD
 ## Title: Pulling NEON data to overlay on basemap
 ## Date: 21 June 2018
 ## Author: Cameo Chilcutt
 ## Sources: 
 
-# Start with a clear workspace and set working directory to google drive -> NEON_LTER_2018 folder -> data -> raw_data -> neon -> spatial_data 
+# Start with a clear workspace and set working directory to google drive -> NEON_LTER_2018 folder -> data -> raw_data
 rm(list=ls())
 setwd("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data")
 
@@ -14,9 +13,10 @@ library(ggmap)
 library(rgeos)
 library (ggplot2)
 library(raster)
+library (ggsn)
 
 # Import terrestrial data shape files
-terrestrial <- readOGR(dsn=path.expand(".\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_NEON_TOS_Centroid_V4.shp"))
+terrestrial <- readOGR(".\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_NEON_TOS_Centroid_V4.shp")
 plot(terrestrial, col=cm.colors(5), alpha=1, legend=F, main="Terrestrial Data")
 
 #Subset Data
@@ -683,126 +683,41 @@ mapAnaktuvukBurnPerim.f = fortify(mapAnaktuvukBurnPerim)
 ##############################################################################################
 
 #Overlay data onto an Alaska basemap 
-alaskamap <- readOGR(".//arc//gis_data//alaskamap.shp")
-plot(alaskamap, main="Alaska LTER Toolik Lake Station")
+toolmap <- readOGR(".//arc//gis_data//toolik_map.shp")
+basemap<- ggplot(toolmap) + 
+geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim, alpha = 0.8, 
+color = "red", fill = "red",
+size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
+data = mapToolik,
+alpha = 0, 
+color = "black", 
+size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Lake Field Station: Disturbance Patterns")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -151.3, x.max= -152.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .2, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
+data = mapTrails,
+alpha = 0, 
+color = "purple", 
+size = 0.2)+ geom_polygon(aes(x = long, y = lat, group = group), 
+data = mapCamp13,
+alpha = 0.8, 
+color = "white", fill = "white",
+size = 0.2)+ geom_polygon(aes(x = long, y = lat, group = group), 
+data = mapThermokarstWater,
+alpha = 0.8, 
+color = "blue", fill = "blue",
+size = 0.2)+ geom_polygon(aes(x = long, y = lat, group = group), 
+data = map_GP,
+alpha = 0, 
+color = "grey", 
+size = 0.2)+ geom_polygon(aes(x = long, y = lat, group = group), 
+data = maptaps,
+alpha = 0, 
+color = "orange", 
+size = 0.2)
+dist_basemap<-basemap + coord_cartesian(ylim = c(68.3, 69.6), xlim = c(-152, -148.5), expand = FALSE)
+dist_basemap
 
-#Add disturbance and Toolik data
-plot(mapAnaktuvukBurnPerim,
-     col="red",
-     alpha=0.8,
-     add=T,
-     legend=T)
 
-plot(mapAnakBurnLakes,
-     col="red",
-     alpha=0.8,
-     add=T,
-     legend=T)
-
-plot(mapAnakBurnPerimRocha,
-     col="red",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapAnakBurnRivers,
-     col="red",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapTrails,
-     col="grey",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapCamp10,
-     col="white",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapCamp13,
-     col="white",
-alpha=0.4,
-add=T,
-legend=T)
-
-plot(mapCrumpWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(map_GP,
-     col="grey",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(maptoolikarc,
-     col="pink",
-     alpha=0,
-     add=T,
-     legend=T)
-
-plot(maptoolikpoly,
-     col= "pink",
-alpha=0,
-add=T,
-legend=T)
-
-plot(mapImnaviatWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapKlingWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapKuparukWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapLostLakeWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapOksrukuyikWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(maptaps,
-     col="gold1",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapThermokarstWater,
-     col="green",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(mapToolikinletWater,
-     col="blue",
-     alpha=0.4,
-     add=T,
-     legend=T)
-
-plot(arc1,
-     col="purple",
+plot(points,
+     col=arc1$color,
      alpha=0.8,
      add=T,
      legend=T)
@@ -833,10 +748,29 @@ write.csv(arc1,file="arc1.csv", row.names=FALSE)
 # Create new column filled with default colour
 arc1$color = "orange"
 # Set new column values to appropriate colours
-arc1$color[arc1$burn_dist0.76>=3]="blue"
-arc1$color[arc1$burn_dist0.60<=1]="red"
+arc1$color[arc1$burn_dist>=0.76]="blue"
+arc1$color[arc1$burn_dist<=0.60]="red"
 # Plot all points at once, using newly generated colours
-plot(arc1$color,arc1$burn_dist, ylim=c(0,1), xlim=c(0,1), col=arc1$color)
+plot(arc1$color,arc1$burn_dist, ylim=c(0,1), xlim=c(0,1), col=arc1$burn_dist)
 arc1$color
 arc1$burn_dist
 summary(arc)
+write.csv(arc1,file="arc1.csv", row.names=FALSE)
+
+points_plot<-plot(x=arc1$longitd, y=arc1$latitud,
+     col = arc1$color, xlab = "distance", 
+     ylab = "color", main = "Plot Title", pch = 19, cex = 0.5)
+
+plot(mapAnaktuvukBurnPerim)
+
+points(points, col="red")
+
+points<- arc1[,16:17]
+plot(-145:-152, 65:70, type = "p")
+points<- points(points, col=arc1$color, cex=1.5)
+drawExtent()
+library(maptools)
+library(rgdal)
+
+
+
