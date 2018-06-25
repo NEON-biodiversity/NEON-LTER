@@ -14,6 +14,8 @@ library(rgeos)
 library (ggplot2)
 library(raster)
 library (ggsn)
+library(gridExtra)
+library(grid)
 
 # Import terrestrial data shape files
 terrestrial <- readOGR(".\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_NEON_TOS_Centroid_V4.shp")
@@ -145,14 +147,18 @@ arc1$distance_class[arc1$burn_dist<=0.60]="near"
 
 #Let's create a complete map showing all of the NEON site data with the disturbance data. 
 toolmap <- readOGR(".//arc//gis_data//toolik_map.shp")
-basemap<- ggplot(toolmap) + 
-geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim, alpha = 0.8, 
-color = "red", fill = "red",
+arctic_map1 <- get_map(location = c(lon = -149.5, lat = 69.5),
+                       color = "color",
+                       source = "google",
+                       maptype = "roadmap",
+                       zoom = 7)
+basemap<- ggmap(arctic_map1) + geom_polygon(aes(x = long, y = lat, group = group), data = mapAnaktuvukBurnPerim, alpha = 0.8, 
+color = "black", fill = "black",
 size = 0.2) + geom_polygon(aes(x = long, y = lat, group = group), 
 data = mapToolik,
 alpha = 0, 
-color = "black", 
-size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Lake Field Station: Disturbance Patterns")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -151.3, x.max= -152.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .2, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
+color = "darkturquoise", 
+size = 0.2) + xlab("Longitude")+ ylab("Latitude") + ggtitle("Toolik Lake Field Station: Disturbance Patterns")+ theme(plot.title = element_text(hjust = .5)) + scalebar(x.min= -151.3, x.max= -152.0, y.min= 69.5, y.max= 69.58, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .2, height = 0.5, model="WGS84") + geom_polygon(aes(x = long, y = lat, group = group), 
 data = mapTrails,
 alpha = 0, 
 color = "purple", 
@@ -174,12 +180,25 @@ alpha = 0,
 color = "orange", 
 size = 0.2)
 dist_basemap<-basemap + coord_cartesian(ylim = c(68.3, 69.6), xlim = c(-152, -148.5), expand = FALSE)
-dist_basemap + geom_point(aes(x = longitd, y = latitud, color = distance_class), data = arc1@data) +
-  scale_color_manual(values = c(far='slateblue', middle='forestgreen', near='goldenrod'))
-
+dist_basemap1<-dist_basemap + geom_point(aes(x = longitd, y = latitud, color = distance_class), data = arc1@data) +
+  scale_color_manual(values = c(far='slateblue', middle='forestgreen', near='palevioletred'))
+dist_basemap1
 #The points showing distance_class are the NEON points distance from the Anaktuvuk fire. These data were calculated from the section about and now we can visualize them on a map in relation to the Toolik Lake Field Station and the other disturbances shown on the map.
 
+##################################################################################Now let's add an inset map of Alaska with a point indicating the location of the Toolik Lake Field Station.
+alaskamap<- readOGR(".//arc//gis_data//alaskamap.shp")
 
+rectangle<-data.frame(xmin=-149.6595, xmax=-149.1349 ,ymin=68.488 ,ymax=68.698)
 
+inset<-ggplot()+geom_polygon(data=alaskamap, aes(long,lat,group=group),colour="grey10",fill="#fff7bc")+ geom_rect(data = rectangle, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax), alpha=0, colour="red", size = 1, linetype=1)+
+  theme(axis.text.x =element_blank(),axis.text.y= element_blank(), axis.ticks=element_blank(),axis.title.x =element_blank(),
+        axis.title.y= element_blank())
+inset
 
-
+png(file="mrdq.png",w=1800,h=1800, res=300)
+grid.newpage()
+v1<-viewport(width = 1, height = 1, x = 0.5, y = 0.5) #plot area for the main map
+v2<-viewport(width = 0.3, height = 0.3, x = 0.86, y = 0.28) #plot area for the inset map
+print(p1,vp=v1) 
+print(p2,vp=v2)
+dev.off()
