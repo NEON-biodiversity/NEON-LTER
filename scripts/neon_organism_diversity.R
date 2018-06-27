@@ -9,8 +9,15 @@
 
 ## This script reads in NEON's organismal raw data across all available sites, 
 # computes diversity measures per site and year, and cumulatively,
-# and exports those data. The API portion of the script is based on
-# QDR's neon_api_grad_lab_rawcode.R available at: https://github.com/NEON-biodiversity/teaching/tree/master/grad_lab
+# and exports those data. 
+
+# Modified 26 June: add some options to richness_cumulative() function
+# Modified 24 June: moved all plotting code to a different script that can be run locally with data on google drive
+
+## On HPCC; add this command to load recent R version
+#module swap GNU GNU/4.9
+#module load OpenMPI 1.10.0
+#module load R/3.3.2
 
 #Clear all existing data
 rm(list=ls())
@@ -18,29 +25,19 @@ rm(list=ls())
 #Close graphics devices
 graphics.off()
 
-#set working directory
-google_drive <- 'C:/Users/Q/google_drive/NEON_EAGER' # if you are Q
-google_drive <- '/Volumes/GoogleDrive/My Drive/Research/ScalingUp/NEON_EAGER' # if you are Phoebe
-setwd(file.path(google_drive, "Manuscript4_NEON_Organisms")) # GD location
-#setwd("/Volumes/neon/final_data/richness") # HPCC location
+# Set file paths
 data_path <- '/mnt/research/neon/raw_data/organismal_data_june2018'
 tax_path <- '/mnt/research/neon/raw_data/taxonomy_lists_june2018'
 fig_path <- '/mnt/research/neon/MS4_NEONOrganisms/figs'
 export_path <- '/mnt/research/neon/final_data/richness'
 
 #Install/load packages
-for (package in c("ggplot2", "lme4", "dplyr", "purrr", "reshape2", "lubridate", "iNEXT")) {
+for (package in c("lme4", "dplyr", "purrr", "reshape2", "lubridate", "iNEXT")) {
   if (!require(package, character.only=T, quietly=T)) {
     install.packages(package)
     library(package, character.only=T)
   }
 }
-# This code for ggplot2 sets the theme to mostly black and white 
-# (Arial font, and large font, base size=24)
-theme_set(theme_bw(12))
-theme_update(axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5),
-             axis.text.y = element_text(size = 10),
-             strip.background = element_blank())
 
 ## Code below from https://github.com/NEON-biodiversity/teaching/tree/master/grad_lab/neon_api_grad_lab_rawcode.R
 
@@ -55,7 +52,7 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5),
 
 # Read in data from each taxon
 # Note: data are pulled with the R script on github/sydnerecord/NEON/data_extraction/datapull_neonapi.r
-# The data for everything but mammals was pulled on 20 June 2018
+# The data were all pulled on 20 June 2018
 
 mammal_data <- read.csv(file.path(data_path,"mammal_data.csv"), stringsAsFactors = FALSE)
 bird_data <- read.csv(file.path(data_path,"bird_pointcount.csv"), stringsAsFactors = FALSE)
@@ -84,6 +81,8 @@ tick_tax <- read.csv(file.path(tax_path, 'tick_taxonomy.csv'), stringsAsFactors 
 # Use the following rule: if there is no species-level identification within a given genus, keep those individuals because they can all be treated as a single species
 # But if there are any individuals in a genus that are identified to species, we have to get rid of all the un-ID'd ones because they could be part of that species
 # If anything is identified to a level even coarser than genus, get rid of it
+
+# Edit 24 June: make a separate tree data frame with only the trees in Little's list.
 
 # QC function to keep only taxa we want.
 keep_taxa <- function(dat, column = 'taxonID') {
@@ -137,6 +136,11 @@ phytop_data <- phytop_data %>%
   mutate(year = year(collectDate))
 ### there are only two species of tick so there is no point in doing ticks.
 
+# Little trees only
+little_spp <- read.csv('/mnt/research/neon/final_data/richness/Little_tree_by_NEON_site.csv', stringsAsFactors = FALSE)
+little_tree_data <- tree_data %>%
+  mutate(binomial = map_chr(strsplit(tree_data$scientificName, ' '), function(x) paste(x[1],x[2]))) %>%
+  filter(binomial %in% little_spp$binomial)
 
 # -------------------------------------------------------------------------------------------------------------------------
   
@@ -184,53 +188,35 @@ estimator_asymp <- function(x) {
 # Function to get cumulative richness estimators by site and year
 # Sequentially add years and see what happens to the cumulative observed richness and richness estimators.
 # Each year's result represents all data up to that point in time.
-richness_cumulative <- function(dat, column = 'taxonID') {
-  dat %>%
+
+# Modified 26 June 2018: duplicate $namedLocation to $plotID (applies to macroinverts, aquatic plants, zooplankton, fish) 
+aq_plant_data$plotID<-aq_plant_data$namedLocation
+fish_data$plotID<-fish_data$namedLocation
+macroinvert_data$plotID<-macroinvert_data$namedLocation
+phytop_data$plotID<-phytop_data$namedLocation
+zoop_data$plotID<-zoop_data$namedLocation
+
+# Modified 26 June: add option to do by site or by plot and to keep either the final observed values or all years
+# (group argument and by_year = TRUE or FALSE)
+richness_cumulative <- function(dat, column = 'taxonID', group = 'site', by_year = TRUE) {
+  dat <- dat %>%
     rename(sp = !!column) %>%
-    select(siteID, year, sp) %>%
-    group_by(siteID) %>%
+    select(siteID, plotID, year, sp)
+  if (group == 'site') dat <- dat %>% group_by(siteID)
+  if (group == 'plot') dat <- dat %>% group_by(siteID, plotID)
+  out <- dat %>%
     do(cbind(year = min(.$year):max(.$year),
              richness = map_int(min(.$year):max(.$year), function(yr) length(unique(.$sp[.$year <= yr]))),
              map_dfr(min(.$year):max(.$year), function(yr) estimator_chao1(.$sp[.$year <= yr])),
              map_dfr(min(.$year):max(.$year), function(yr) estimator_asymp(.$sp[.$year <= yr]))
     ))
+  if (!by_year) {
+    out %>% filter(year == max(year)) %>% select(-year)
+  } else {
+    out
+  }
 }
 
-# Function to reshape output of richness_cumulative for plotting with ggplot2
-
-richness_shapeplotdat <- function(rich) {
-  rich %>%
-    melt(id.vars = c('siteID', 'year')) %>%
-    mutate(type = case_when(grepl('chao1', variable) ~ 'chao1',
-                            grepl('asymp', variable) ~ 'asymp',
-                            TRUE ~ 'observed'),
-           stat = case_when(grepl('var|stderr', variable) ~ 'var',
-                            grepl('min', variable) ~ 'CImin',
-                            grepl('max', variable) ~ 'CImax',
-                            TRUE ~ 'estimate')) %>%
-    dcast(siteID + year + type ~ stat) %>%
-    group_by(siteID) %>%
-    mutate(n_year = length(unique(year))) %>%
-    ungroup
-}
-
-# Function to make a plot of cumulative richness by site and year
-
-richness_plot <- function(dat, min_n_years, title, legend_pos, y_max) {
-  pd <- position_dodge(width = 0.2)
-  dat %>%
-    filter(n_year >= min_n_years) %>%
-  ggplot(aes(x = year, color = type)) +
-    facet_wrap(~ siteID) +
-    geom_errorbar(aes(ymin = CImin, ymax = CImax), width = 0.5, position = pd) +
-    geom_line(aes(y = estimate), position = pd) +
-    geom_point(aes(y = estimate), position = pd) +
-    ggtitle(title) +
-    scale_y_continuous(expand = c(0,0), name = 'richness') + 
-    scale_x_continuous(breaks=min(dat$year):max(dat$year)) +
-    theme(legend.position = legend_pos) +
-    coord_cartesian(ylim = c(0, y_max))
-}
 
 # ----------------------------------------------------------
 # Run richness estimators for all taxa by site and year
@@ -239,6 +225,7 @@ richness_plot <- function(dat, min_n_years, title, legend_pos, y_max) {
 # Added by QDR, 19 June 2018
 # Modified by QDR, 20 June 2018: Add other taxa
 
+# Site-level
 mammal_richness_cumulative <- richness_cumulative(mammal_data)
 bird_richness_cumulative <- richness_cumulative(bird_data)
 aq_plant_richness_cumulative <- richness_cumulative(aq_plant_data, column = 'scientificName')
@@ -250,53 +237,24 @@ tree_richness_cumulative <- richness_cumulative(tree_data)
 beetle_richness_cumulative <- richness_cumulative(beetle_data)
 zoop_richness_cumulative <- richness_cumulative(zoop_data)
 phytop_richness_cumulative <- richness_cumulative(phytop_data, column = 'scientificName')
+littletree_richness_cumulative <- richness_cumulative(little_tree_data, column = 'binomial')
 
-# Make a plot of the cumulative richness estimates through the years
-
-# Reshape data for better plotting
-# Only plot sites that have at least 3 years of samples
-# For some taxa, might need to do fewer years
-p_mam <- mammal_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative small mammal richness', legend_pos = c(0.9, 0.05), y_max = 25)
-p_bird <- bird_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative bird richness', legend_pos = 'bottom', y_max = 175)
-p_aqplant <- aq_plant_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative aquatic plant richness', legend_pos = c(0.9, 0.05), y_max = 50)
-p_macroinv <- macroinvert_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative benthic macroinvertebrate richness', legend_pos = c(0.9, 0.05), y_max = 300)
-p_fish <- fish_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 2, title = 'Cumulative fish richness', legend_pos = c(0.9, 0.05), y_max = 40)
-p_mosq <- mosq_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative mosquito richness', legend_pos = c(0.9, 0.05), y_max = 75)
-p_plant <- plant_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative terrestrial plant richness', legend_pos = c(0.9, 0.05), y_max = 1000)
-p_tree <- tree_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative tree & woody plant richness', legend_pos = c(0.9, 0.05), y_max = 100)
-p_beetle <- beetle_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative ground beetle richness', legend_pos = c(0.9, 0.05), y_max = 200)
-p_zoop <- zoop_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative zooplankton richness', legend_pos = c(0.9, 0.05), y_max = 100)
-p_phytop <- phytop_richness_cumulative %>%
-  richness_shapeplotdat() %>%
-  richness_plot(min_n_years = 3, title = 'Cumulative phytoplankton richness', legend_pos = c(0.9, 0.05), y_max = 250)
+# Plot-level
+mammal_richness_cumulative <- richness_cumulative(mammal_data, group='plot')
+bird_richness_cumulative <- richness_cumulative(bird_data, group='plot')
+aq_plant_richness_cumulative <- richness_cumulative(aq_plant_data, group='plot', column = 'scientificName')
+macroinvert_richness_cumulative <- richness_cumulative(macroinvert_data, group='plot', column = 'acceptedTaxonID')
+fish_richness_cumulative <- richness_cumulative(fish_data,group='plot')
+mosq_richness_cumulative <- richness_cumulative(mosq_data, group='plot', column = 'scientificName')
+plant_richness_cumulative <- richness_cumulative(plant_data,group='plot')
+tree_richness_cumulative <- richness_cumulative(tree_data,group='plot')
+beetle_richness_cumulative <- richness_cumulative(beetle_data,group='plot')
+zoop_richness_cumulative <- richness_cumulative(zoop_data,group='plot')
+phytop_richness_cumulative <- richness_cumulative(phytop_data, group='plot', column = 'scientificName')
+littletree_richness_cumulative <- richness_cumulative(little_tree_data, group='plot', column = 'binomial')
 
 
-pdf(file.path(fig_path, 'cumulative_richness_alltaxa.pdf'), height = 7, width = 9)
-  p_mam; p_bird; p_aqplant; p_macroinv; p_fish; p_mosq; p_plant; p_tree; p_beetle; p_zoop; p_phytop;
-dev.off()
-
-
-# Export richness data by taxonomic group
+# Export richness data by taxonomic group: site-level
 # --------------------------------------
 write.csv(mammal_richness_cumulative,file.path(export_path,"mammal_richness_cumulative.csv"),row.names=F)
 write.csv(bird_richness_cumulative,file.path(export_path,"bird_richness_cumulative.csv"),row.names=F)
@@ -307,6 +265,39 @@ write.csv(phytop_richness_cumulative,file.path(export_path,"phytop_richness_cumu
 write.csv(plant_richness_cumulative,file.path(export_path,"plant_richness_cumulative.csv"),row.names=F)
 write.csv(tree_richness_cumulative,file.path(export_path,"tree_richness_cumulative.csv"),row.names=F)
 write.csv(zoop_richness_cumulative,file.path(export_path,"zoop_richness_cumulative.csv"),row.names=F)
+
+# Also combine everything into one data frame and write to a single CSV for easier loading.
+alltaxa_richness_cumulative <- rbind(
+  data.frame(taxon = 'mammal', mammal_richness_cumulative),
+  data.frame(taxon = 'bird', bird_richness_cumulative),
+  data.frame(taxon = 'beetle', beetle_richness_cumulative),
+  data.frame(taxon = 'mosquito', mosq_richness_cumulative),
+  data.frame(taxon = 'all plants', plant_richness_cumulative),
+  data.frame(taxon = 'all woody plants', tree_richness_cumulative),
+  data.frame(taxon = 'trees', littletree_richness_cumulative),
+  data.frame(taxon = 'macroinvertebrate', macroinvert_richness_cumulative),
+  data.frame(taxon = 'fish', fish_richness_cumulative),
+  data.frame(taxon = 'zooplankton', zoop_richness_cumulative),
+  data.frame(taxon = 'phytoplankton', phytop_richness_cumulative),
+  data.frame(taxon = 'aquatic plants', aq_plant_richness_cumulative)
+)
+
+write.csv(alltaxa_richness_cumulative, file.path(export_path, 'alltaxa_richness_cumulative.csv'), row.names = FALSE)
+
+## Edit 26 June 2018 PLZ
+# Export the plot-level richness (when including plotID above in richness calculation)
+# Export richness data by taxonomic group: plot-level
+# --------------------------------------
+write.csv(mammal_richness_cumulative,file.path(export_path,"mammal_richness_cumulative_plot.csv"),row.names=F)
+write.csv(bird_richness_cumulative,file.path(export_path,"bird_richness_cumulative_plot.csv"),row.names=F)
+write.csv(beetle_richness_cumulative,file.path(export_path,"beetle_richness_cumulative_plot.csv"),row.names=F)
+write.csv(macroinvert_richness_cumulative,file.path(export_path,"macroinvert_richness_cumulative_plot.csv"),row.names=F)
+write.csv(mosq_richness_cumulative,file.path(export_path,"mosq_richness_cumulative_plot.csv"),row.names=F)
+write.csv(phytop_richness_cumulative,file.path(export_path,"phytop_richness_cumulative_plot.csv"),row.names=F)
+write.csv(plant_richness_cumulative,file.path(export_path,"plant_richness_cumulative_plot.csv"),row.names=F)
+write.csv(tree_richness_cumulative,file.path(export_path,"tree_richness_cumulative_plot.csv"),row.names=F)
+write.csv(zoop_richness_cumulative,file.path(export_path,"zoop_richness_cumulative_plot.csv"),row.names=F)
+
 
 # -------------------------------------------------------------------------------------------------------------------------
 ## End of Code work 21 June 2018 
