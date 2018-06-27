@@ -35,6 +35,12 @@ NEON_matrix <- matrix(
   ncol=146
 )
 
+# Map overlapping points
+# crop cut data for mapping
+cut_cropped <- crop(cut_data, extent(hrf_map))
+plot(cut_cropped)
+points(hrf_map, col="red")
+
 # Find overlapping points
 overlap_2 <- over(hrf_map, cut_data)
 
