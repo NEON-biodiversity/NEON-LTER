@@ -1,8 +1,8 @@
-# Title:			  Massachusets Timber Harvesting Study
-# Site:			    Harvard Forest
-# Data Sources:	http://harvardforest.fas.harvard.edu:8080/exist/apps/datasets/da-search-all.html 
-# Authors:	   	Kyra Hoerr  
-# Date:			    20 June 2018
+# Title:        Massachusets Timber Harvesting Study
+# Site:         Harvard Forest
+# Data Sources: http://harvardforest.fas.harvard.edu:8080/exist/apps/datasets/da-search-all.html 
+# Authors:      Kyra Hoerr  
+# Date:         20 June 2018
 
 # Libraries
 library(raster)
@@ -28,10 +28,6 @@ cutting <- readOGR("C:/Users/Kyra/Documents/Harvard/data/HF/LTER/Mass_Timber/hf0
 cut_data <- spTransform(cutting, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(cut_data)
 
-# Read overlap data
-overlap <- read.csv("C:/Users/Kyra/Documents/Harvard/data/HF/NEON_Spatial/NEON_points.csv")
-overlap_ids <- overlap$FILE_ID
-
 # Create a matrix
 NEON_matrix <- matrix(
   c(rep("N/A")), 
@@ -39,42 +35,10 @@ NEON_matrix <- matrix(
   ncol=146
 )
 
-# Create a for loop
-col1 <- as.character(overlap_ids)
-
-# Ignore this for now
-for (k in 1:length(overlap_ids)) {
-  col1 <- as.character(overlap_ids)
-  NEON_matrix[k,1] <- col1[k]
-}
-
-
-for (i in 1:length(rownames(overlap))) {
-  NEON_matrix[i,1] <- overlap[i,13]
- NEON_matrix[i,2] <- overlap[i,2]
- NEON_matrix[i,3:74] <- as.matrix(plan[i,2:ncol(plan)])
- NEON_matrix[i,75:146] <- as.matrix(volume[i,2:ncol(volume)])
-}
-
-# Create Overlap data
-cut_x <- coordinates(cut_data)[,1]
-cut_y <- coordinates(cut_data)[,2]
-
-# Method 1 to find overlap
-overlap_1 <- point.in.polygon(hrf_map$longitd, hrf_map$latitud, cut_x, cut_y, mode.checked=FALSE)
-# Method 2 to find overlap
+# Find overlapping points
 overlap_2 <- over(hrf_map, cut_data)
 
-# Test of method 1
-total1 <- 0
-for (k in 1:length(overlap_1)) {
-   if(overlap_1[k] > 0){
-     total1 <- total1 + 1
-   }
-}
-print(total1)
-
-# Test of method 2
+# Test overlapping points (comare to GIS results)
 total2 <- 0
 for (j in 1:length(overlap_2[,1])) {
   if(!is.na(overlap_2[j,1]))  {
@@ -91,3 +55,11 @@ for (k in 1:length(overlap_2[,1])) {
     }
 }
 print(overlap_ids)
+
+# Enter data in matrix
+for (i in 1:length(rownames(overlap))) {
+  NEON_matrix[i,1] <- overlap[i,13]
+ NEON_matrix[i,2] <- overlap[i,2]
+ NEON_matrix[i,3:74] <- as.matrix(plan[i,2:ncol(plan)])
+ NEON_matrix[i,75:146] <- as.matrix(volume[i,2:ncol(volume)])
+}
