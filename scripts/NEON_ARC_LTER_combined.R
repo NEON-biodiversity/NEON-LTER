@@ -167,16 +167,35 @@ head(arc5)
 
 #Merge all data frames together for a complete data set
 combined.dist3<-merge(combined.dist2, arc5, by="plotID", all=T)
-write.csv(combined.dist3,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=FALSE)
+
+#Roads & Trails
+arc_rt_dist<- apply(gDistance(arc_UTM, rt,byid=TRUE),2,min)
+arc_rt_dist<- data.frame(arc_rt_dist)
+head(arc_rt_dist)
+
+#Rename column
+names(arc_rt_dist)[names(arc_rt_dist)=="arc_rt_dist"] <- "roads_dist"
+head(arc_rt_dist)
+
+#Merge data 
+arc6<- merge(arc_UTM, arc_rt_dist, by=0, all=TRUE)
+head(arc_rt_dist)
+head(arc6)
+
+#Merge all data frames together
+combined.dist4<-merge(combined.dist3, arc6, by="plotID", all=T)
+write.csv(combined.dist4,file="combined_distance_data.csv", row.names=FALSE)
+
+write.csv(combined.dist4,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=FALSE)
 ##################################################################################################################################################################
 #Now we need to clean up the data frame and select only the columns we need.
 #Select important columns
-keep=c("plotID", "siteID", "siteNam", "burn_dist",	"bldgs_dist",	"pipeline_dist",	"thermokarst_dist", "water_dist" )
+keep=c("plotID", "siteID", "siteNam", "burn_dist",	"bldgs_dist",	"pipeline_dist",	"thermokarst_dist", "water_dist", "roads_dist" )
 
 # Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
-keep[!keep %in% names(combined.dist3)]
+keep[!keep %in% names(combined.dist4)]
 
-combined.distances <- combined.dist3
+combined.distances <- combined.dist4
 combined.distances@data <- combined.distances@data[,keep] 
 write.csv(combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=F)
 
@@ -218,7 +237,10 @@ combined.distances$dist_type[combined.distances$dist_type=="bldgs_dist"]<-"build
 combined.distances$dist_type[combined.distances$dist_type=="pipeline_dist"]<-"pipeline"
 combined.distances$dist_type[combined.distances$dist_type=="thermokarst_dist"]<-"thermokarst"
 combined.distances$dist_type[combined.distances$dist_type=="water_dist"]<-"water source"
+combined.distances$dist_type[combined.distances$dist_type=="roads_dist"]<-"roads"
 sort(unique(combined.distances$dist_type))
+
+write.csv(combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=FALSE)
 
 #To save the workspace with all of our data and final products, use the following code:
 save.image("NEON_ARC_LTER_combined.RData")
