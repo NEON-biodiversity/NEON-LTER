@@ -244,3 +244,151 @@ write.csv(combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_dat
 
 #To save the workspace with all of our data and final products, use the following code:
 save.image("NEON_ARC_LTER_combined.RData")
+###################################################################################################################################################################Title: Calculating the surface area of a shapefile 
+#Date: 28 June 2018
+load("NEON_ARC_LTER_combined.RData")
+
+#Anaktuvuk Burn Area Calculation
+anak_area<-gArea(anaktuvuk)
+anak_area
+anak_area<- data.frame(anak_area)
+anak_area
+
+#Rename column
+names(anak_area)[names(anak_area)=="anak_area"] <- "burn_area"
+head(anak_area)
+
+#Merge data 
+area_add<- merge(combined.distances, anak_area, by=0, all=TRUE)
+head(anak_area)
+head(area_add)
+
+#Camp Buildings Area Calculation
+cb13_area<-gArea(cb13)
+cb13_area
+cb13_area<- data.frame(cb13_area)
+cb13_area
+
+#Rename column
+names(cb13_area)[names(cb13_area)=="cb13_area"] <- "buildings_area"
+head(cb13_area)
+
+#Merge data 
+area_add1<- merge(combined.distances, cb13_area, by=0, all=TRUE)
+head(cb13_area)
+head(area_add1)
+
+#Merge data frames
+final<-merge(area_add1, area_add, by=0, all=T)
+summary(final)
+
+#Pipeline Area Calculation **Ask Phoebe about this**
+#pipe_area<-gArea(pipeline)
+#pipe_area
+#pipe_area<- data.frame(pipe_area)
+#pipe_area
+
+#Rename column
+#names(pipe_area)[names(pipe_area)=="pipe_area"] <- "pipeline_area"
+#head(pipe_area)
+
+#Merge data 
+#area_add2<- merge(combined.distances, pipe_area, by=0, all=TRUE)
+#head(pipe_area)
+#head(area_add1)
+
+#Merge data frames
+#final1<-merge(final, area_add2, by=0, all=T)
+#summary(final)
+
+#Thermokarst Area Calculation
+thermo_area<-gArea(thermokarst)
+thermo_area
+thermo_area<- data.frame(thermo_area)
+thermo_area
+
+#Rename column
+names(thermo_area)[names(thermo_area)=="thermo_area"] <- "thermokarst_area"
+head(thermo_area)
+
+#Merge data 
+area_add3<- merge(combined.distances, thermo_area, by=0, all=TRUE)
+head(thermo_area)
+head(area_add3)
+
+#Merge data frames
+final2<-merge(final, area_add3, by=0, all=T)
+names(final2)
+
+#Roads and Trails Area Calculation **Ask Phoebe About This**
+#rt_area<-gArea(rt)
+#rt_area
+#rt_area<- data.frame(rt_area)
+#rt_area
+
+#Rename column
+#names(rt_area)[names(rt_area)=="rt_area"] <- "roads_trails_area"
+#head(rt_area)
+
+#Merge data 
+#area_add4<- merge(combined.distances, rt_area, by=0, all=TRUE)
+#head(rt_area)
+#head(area_add4)
+
+#Merge data frames
+#final3<-merge(final2, area_add4, by=0, all=T)
+#names(final3)
+
+#Water Source Area Calculation
+water_area<-gArea(toolwater)
+water_area
+water_area<- data.frame(water_area)
+water_area
+
+#Rename column
+names(water_area)[names(water_area)=="water_area"] <- "stream_area"
+head(water_area)
+
+#Merge data 
+area_add5<- merge(combined.distances, water_area, by=0, all=TRUE)
+head(water_area)
+head(area_add5)
+
+#Merge data frames
+final4<-merge(final3, area_add5, by=0, all=T)
+names(final4)
+
+write.csv(final4,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=FALSE)
+##################################################################################################################################################################
+#Now we need to clean up the data frame and select only the columns we need.
+#Select important columns
+keep=c("plotID", "siteID", "siteNam", "burn_dist",	"bldgs_dist",	"pipeline_dist",	"thermokarst_dist", "water_dist", "roads_dist", "stream_area", "roads_trails_area", "thermokarst_area", "pipeline_area", "burn_area" )
+
+# Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
+keep[!keep %in% names(final4)]
+
+plot_level_dataframe <- final4
+plot_level_dataframe@data <- plot_level_dataframe@data[,keep] 
+write.csv(plot_level_dataframe, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=F)
+
+#Make these data a data frame.
+plot_level_dataframe<-data.frame(plot_level_dataframe@data)
+class(plot_level_dataframe)
+head(plot_level_dataframe)
+
+##################################################################################################################################################################
+#Now we need to put our distance data into long format.
+#Long Format of combined.distances to characterize dist_type
+library(dplyr)
+library(reshape2)
+plot_level_dataframe<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv")
+head(plot_level_dataframe)
+
+#We have some unneccessary columns that came with the spatial point data frame. So, we will exclude those to further clean up our data frame.
+plot_level_dataframe$coords.x1<-NULL
+plot_level_dataframe$coords.x2<-NULL
+plot_level_dataframe$optional<-NULL
+head(plot_level_dataframe)
+
+#Create the long format
+
