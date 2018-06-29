@@ -38,6 +38,12 @@ for (package in c("lme4", "dplyr", "purrr", "reshape2", "lubridate", "ggplot2"))
   }
 }
 
+# This code for ggplot2 sets the theme to mostly black and white 
+# (Arial font, and large font, base size=24)
+theme_set(theme_bw(12))
+theme_update(axis.text.x = element_text(size = 10, angle = 90),
+             axis.text.y = element_text(size = 10))
+
 # ----------------------------------------
 # Load all organismal richness and within-site neon plot-level disturbance data 
 # ----------------------------------------
