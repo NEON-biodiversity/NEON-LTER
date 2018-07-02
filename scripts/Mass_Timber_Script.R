@@ -4,6 +4,9 @@
 # Authors:      Kyra Hoerr  
 # Date:         20 June 2018
 
+# Set working directory
+setwd("G:/My Drive/NEON_LTER_2018/data/raw_data")
+
 # Libraries
 library(raster)
 library(rgdal)
