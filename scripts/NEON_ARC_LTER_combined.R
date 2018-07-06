@@ -240,11 +240,39 @@ combined.distances$dist_type[combined.distances$dist_type=="water_dist"]<-"water
 combined.distances$dist_type[combined.distances$dist_type=="roads_dist"]<-"roads"
 sort(unique(combined.distances$dist_type))
 
-write.csv(combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=FALSE)
+write.csv(combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\neon_plotid_dist2disturbance.csv", row.names=FALSE)
+
+#################################################################################
+##################################################################################Elevation extraction
+elev<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\USGS_NED_OPR_Alaska_Mid_Accuracy_DEM_Summer_2015_ArcGrid_2016\\grd2119_opr\\grd2119_opr.tif") 
+plot(elev)
+summary(elev)
+# Define the spatial reference 
+#elev_UTM <- "+proj=utm +zone=6 ellps=WGS84 +datum=NAD83 +units=m +no_defs" 
+# Project Raster
+# can't because uses too much memory
+#projected_elevation <- projectRaster(imported_raster, crs = elev_UTM)
+#Because we could not reproject the raster, we simply reprojected the arc data to UTM - Zone 5.
+arc_zone5 <- spTransform(arc, CRS("+proj=utm +zone=5 ellps=WGS84"))
+#elevation<- spTransform(elev, CRS(projection(arc_zone5)))
+str(elev)
+
+plot(elev)
+plot(arc_zone5, add=T)
+
+#################################################################################
+#Extraction
+arc_zone5$elevatn
+
+
+
+
+
+
 
 #To save the workspace with all of our data and final products, use the following code:
 save.image("NEON_ARC_LTER_combined.RData")
-###################################################################################################################################################################Title: Calculating the surface area of a shapefile 
+##################################################################################################################################################################Title: Calculating the surface area of a shapefile 
 #Date: 28 June 2018
 load("NEON_ARC_LTER_combined.RData")
 
@@ -375,7 +403,6 @@ write.csv(plot_level_dataframe, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_
 plot_level_dataframe<-data.frame(plot_level_dataframe@data)
 class(plot_level_dataframe)
 head(plot_level_dataframe)
-
 ##################################################################################################################################################################
 #Now we need to put our distance data into long format.
 #Long Format of combined.distances to characterize dist_type
