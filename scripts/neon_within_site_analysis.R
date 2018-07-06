@@ -208,19 +208,19 @@ el
 # convert data back to wide format for easier modeling (might need to load reshape package)
 # can also probably do this in dplyr
 # First add a line of code that removes all columns except siteID, plotID, taxa, richness, dist_type, distance_m
-***** Add line of code here *******
-  # Wide format
-  dist.rich1<-reshape(dist.rich,
-                      v.names="dist_type",    # the variable you want to transpose to wide format
-                      idvar=c("siteID","plotID"),  # your independent variable(s); careful because if you
-                      # keep the other columns in your dataset, it may be confusing 
-                      # how the other columns relate to these new columns
+keep=c("siteID", "plotID", "taxa", "richness", "dist_type", "distance_m")
+dist.rich <- dist.rich[,keep]  
+head(dist.rich)
+# Wide format
+  dist.rich1<-reshape(dist.rich, v.names="dist_type",    # the variable you want to transpose to wide format
+                      idvar=c("siteID","plotID"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
                       timevar="distance_m",  # what do you want to fill the column, "v.names" with?
                       direction="wide") # the direction (can also be long)
-
+str(dist.rich1)
 # For mammals, run linear model to investigate how disturbance explains richness variability
+
 # change to reflect actual column names in dist.rich1 
-m1<-lm(dist.rich1$richness~dist.rich1$disturbance1distance+
+m1<-lm(dist.rich1$richness~dist.rich1$distance_m+
          dist.rich1$disturbance2distance+
          dist.rich1$disturbance3distance+
          dist.rich1$disturbance4distance)
@@ -231,6 +231,4 @@ anova(m1)
 # use qqplot() at least
 # do data look normal? if not, then we will need to transform
 
-
-Sent from Mail for Windows 10
 
