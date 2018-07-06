@@ -13,7 +13,7 @@ library (ggsn)
 library(gridExtra)
 
 # Set working directory
-setwd("C:/Users/Kyra/Documents/Harvard/data/HF/LTER")
+setwd("G:/My Drive/NEON_LTER_2018/data/raw_data")
 
 # Read hf014 (Mass_Landcover)
 hf014_01 <- read.csv("~/Harvard/data/HF/LTER/Mass_Landcover/hf014-01-census-pre1900.csv")
