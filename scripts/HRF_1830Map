@@ -1,0 +1,52 @@
+## Not working yet
+
+# Title:			  Massachusets Timber Harvesting Study
+# Site:			    Harvard Forest
+# Data Sources:	http://harvardforest.fas.harvard.edu:8080/exist/apps/datasets/da-search-all.html 
+# Authors:	   	Kyra Hoerr  
+# Date:			    20 June 2018
+
+# Libraries
+library(raster)
+library(rgdal)
+library(ggplot2)
+library (ggmap)
+library (ggsn)
+library(gridExtra)
+
+# Read 1830 map data
+map1830_data <- readOGR("C:/Users/Kyra/Documents/Harvard/data/HF/LTER/Map_1830", "1830lulc")
+map1830 <- spTransform(map1830_data, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+# Read NEON point data
+terrestrial <- readOGR(dsn="C:/Users/Kyra/Documents/Harvard/data/NEON_Spatial/All_NEON_TOS_Plots_V4", "All_Neon_TOS_Centroid_V4")
+hrf <- terrestrial[terrestrial$siteNam=="Harvard Forest",]
+hrf_map <- spTransform(hrf, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+plot(hrf_map)
+points(hrf_map, col="red")
+
+# Find points that intersect with polygon
+final_map <- over(hrf_map,map1830)
+
+total <- 0
+for (j in 1:length(final_map[,1])) {
+  if(!is.na(final_map[j,1]))  {
+    total <- total + 1
+  }
+}
+print(total)
+
+# Create a matrix
+hrf_map_data <- matrix(
+  c(rep("N/A")), 
+  nrow=86,
+  ncol=6
+)
+
+# Second for loop
+for (k in 1:length(final_map[,1])) {
+  if(!is.na(final_map[k,1]))  {
+   hrf_map_data[k,1:6] <- as.matrix(final_map[k,1:6])
+  }
+}
+
