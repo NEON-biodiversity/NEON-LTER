@@ -20,13 +20,18 @@ unique(terrestrial$siteNam)
 arc<-terrestrial[terrestrial$siteNam=="Toolik Lake",]
 summary(arc)
 plot(arc)
+hrf<-terrestrial[terrestrial$siteNam=="Harvard Forest",]
+summary(hrf)
+plot(hrf)
 
 #Currently, it is in latitude and longitude, but in order to measure distance in meters we need to reproject the data into UTMs. You should look up the appropriate zone for your site. For the Toolik Lake Field Station we needed UTM Zone 6. 
 arc_UTM<-spTransform(arc, CRS("+proj=utm +zone=6 ellps=WGS84"))
 head(arc_UTM)
+hrf_UTM<-spTransform(hrf, CRS("+proj=utm +zone=6 ellps=WGS84"))
+head(hrf_UTM)
 ######################################################################################
 #Next we need to import and reproject all of the relevant disturbance shape files. After importing, always plot to be sure you have the appropriate shapes. Also, check if the files are in UTMs. If not, reproject the same way we did for the NEON terrestrial data. We need UTMs to measure distance in meters.
-
+#ARC data
 #Camp Buildings 2013 Data
 cb13 <- readOGR(".\\arc\\gis_data\\camp_buildings_2013$data", "Camp_Buildings_2013")
 plot(cb13, col=rainbow(10), alpha=1, legend=F, main="Camp Buildings 2013")
@@ -74,6 +79,178 @@ summary(thermokarst)
 toolwater<- readOGR(".\\arc\\gis_data\\watersheds_research$data\\Watersheds_Research", "Toolik_inlet_Watershed")
 plot(toolwater, col="blue", main="Toolik Inlet Water")
 summary(toolwater)
+#################################################################################
+#Next we need to import and reproject all of the relevant disturbance shape files. After importing, always plot to be sure you have the appropriate shapes. Also, check if the files are in UTMs. If not, reproject the same way we did for the NEON terrestrial data. We need UTMs to measure distance in meters.
+#HRF data
+#Massachusetts Timber Harvesting Data
+cutting <- readOGR(".\\hrf\\HF_Archives_Data\\Mass_Timber\\hf080-03-gis", "all_cutting_plans_v4")
+cut_data <- spTransform(cutting, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+plot(cut_data)
+
+## 1830 map data
+#Buildings
+building_data <- readOGR(".\\hrf\\HF_Archives_Data\\Map_1830", "1830buildings")
+buildings <- spTransform(building_data, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+plot(buildings)
+
+#Roads
+roads_data <- readOGR(".\\hrf\\HF_Archives_Data\\Map_1830", "1830roads")
+roads <- spTransform(roads_data, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+plot(roads)
+
+#################################################################################
+#Next we need to import and reproject all of the relevant disturbance shape files. After importing, always plot to be sure you have the appropriate shapes. Also, check if the files are in UTMs. If not, reproject the same way we did for the NEON terrestrial data. We need UTMs to measure distance in meters.
+#KNZ data
+#Roads
+
+#Burn History
+burn1972 <- readOGR(".\\knz\\LTER\\GIS05", "GIS050")
+map_burn72 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1973 <- readOGR(".\\knz\\LTER\\GIS05", "GIS051")
+map_burn73 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1974 <- readOGR(".\\knz\\LTER\\GIS05", "GIS052")
+map_burn74 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1975 <- readOGR(".\\knz\\LTER\\GIS05", "GIS053")
+map_burn75 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1976 <- readOGR(".\\knz\\LTER\\GIS05", "GIS054")
+map_burn76 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1977 <- readOGR(".\\knz\\LTER\\GIS05", "GIS055")
+map_burn77 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1978 <- readOGR(".\\knz\\LTER\\GIS05", "GIS056")
+map_burn78 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1979 <- readOGR(".\\knz\\LTER\\GIS05", "GIS057")
+map_burn79 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1980 <- readOGR(".\\knz\\LTER\\GIS05", "GIS058")
+map_burn80 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1981 <- readOGR(".\\knz\\LTER\\GIS05", "GIS059")
+map_burn81 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1982 <- readOGR(".\\knz\\LTER\\GIS05", "GIS060")
+map_burn82 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1983 <- readOGR(".\\knz\\LTER\\GIS05", "GIS061")
+map_burn83 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1984 <- readOGR(".\\knz\\LTER\\GIS05", "GIS062")
+map_burn84 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1985 <- readOGR(".\\knz\\LTER\\GIS05", "GIS063")
+map_burn85 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1986 <- readOGR(".\\knz\\LTER\\GIS05", "GIS064")
+map_burn86 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1987 <- readOGR(".\\knz\\LTER\\GIS05", "GIS065")
+map_burn87 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1988 <- readOGR(".\\knz\\LTER\\GIS05", "GIS066")
+map_burn88 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1989 <- readOGR(".\\knz\\LTER\\GIS05", "GIS067")
+map_burn89 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1990 <- readOGR(".\\knz\\LTER\\GIS05", "GIS068")
+map_burn90 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1991 <- readOGR(".\\knz\\LTER\\GIS05", "GIS069")
+map_burn91 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1992 <- readOGR(".\\knz\\LTER\\GIS05", "GIS070")
+map_burn92 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1993 <- readOGR(".\\knz\\LTER\\GIS05", "GIS071")
+map_burn93 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1994 <- readOGR(".\\knz\\LTER\\GIS05", "GIS072")
+map_burn94 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1995 <- readOGR(".\\knz\\LTER\\GIS05", "GIS073")
+map_burn95 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1996 <- readOGR(".\\knz\\LTER\\GIS05", "GIS074")
+map_burn96 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1997 <- readOGR(".\\knz\\LTER\\GIS05", "GIS075")
+map_burn97 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1998 <- readOGR(".\\knz\\LTER\\GIS05", "GIS076")
+map_burn98 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn1999 <- readOGR(".\\knz\\LTER\\GIS05", "GIS077")
+map_burn99 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2000 <- readOGR(".\\knz\\LTER\\GIS05", "GIS078")
+map_burn00 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2001 <- readOGR(".\\knz\\LTER\\GIS05", "GIS079")
+map_burn01 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2002 <- readOGR(".\\knz\\LTER\\GIS05", "GIS080")
+map_burn02 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2003 <- readOGR(".\\knz\\LTER\\GIS05", "GIS081")
+map_burn03 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2004 <- readOGR(".\\knz\\LTER\\GIS05", "GIS082")
+map_burn04 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2005 <- readOGR(".\\knz\\LTER\\GIS05", "GIS083")
+map_burn05 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2006 <- readOGR(".\\knz\\LTER\\GIS05", "GIS084")
+map_burn06 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2007 <- readOGR(".\\knz\\LTER\\GIS05", "GIS085")
+map_burn07 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2008 <- readOGR(".\\knz\\LTER\\GIS05", "GIS086")
+map_burn08 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2009 <- readOGR(".\\knz\\LTER\\GIS05", "GIS087")
+map_burn09 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2010 <- readOGR(".\\knz\\LTER\\GIS05", "GIS088")
+map_burn10 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2011 <- readOGR(".\\knz\\LTER\\GIS05", "GIS089")
+map_burn11 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2012 <- readOGR(".\\knz\\LTER\\GIS05", "GIS090")
+map_burn12 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2013 <- readOGR(".\\knz\\LTER\\GIS05", "GIS091")
+map_burn13 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2014 <- readOGR(".\\knz\\LTER\\GIS05", "GIS092")
+map_burn14 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2015 <- readOGR(".\\knz\\LTER\\GIS05", "GIS093")
+map_burn15 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+burn2016 <- readOGR(".\\knz\\LTER\\GIS05", "GIS094")
+map_burn16 <- spTransform(burn1972, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+#Roads
+roads <- readOGR(".\\knz\\LTER\\GIS10", "gis100")
+map_roads <- spTransform(roads, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+#Nature trails 
+trails <- readOGR(".\\knz\\LTER\\GIS11", "GIS110")
+map_trails <- spTransform(trails, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+#Permanent structures
+structure_data <- readOGR(".\\knz\\LTER\\GIS19", "GIS190")
+structures <- spTransform(structure_data, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
 #################################################################################
 #Now we are going to measure distance between NEON data collection points and the Anaktuvuk fire.
 arc_burn_dist<- apply(gDistance(arc_UTM, anaktuvuk,byid=TRUE),2,min)
