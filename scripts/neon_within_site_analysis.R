@@ -100,21 +100,25 @@ head(plants)
 # merge all taxonomic data together; before you do this, make sure there is a column for taxa.
 rich<-rbind(birds, plants)
 
-#subset data for Toolik.
+#subset data for Toolik and Harvard Forest
 unique(rich$siteID)
-#Did not work!
-#richness<-rich[rich$siteID=="TOOL", "HARV",]
-richness<-rich[rich$siteID=="TOOL",]
-head(richness)
-str(richness)
+#Use for adding harvard forest data
+#ht_rich<-rich[rich$siteID=="TOOL" | rich$siteID== "HARV",]
+#ht_rich$siteID<-factor(ht_rich$siteID)
+#head(ht_rich)
+#str(ht_rich)
+tool_rich<-rich[rich$siteID=="TOOL",]
+head(tool_rich)
+str(tool_rich)
 
 # merge the disturbance distances with the richness plot-level dataset
-dist.rich<-merge(dist,richness,by=c("siteID","plotID"),all.x=T)
+dist.rich<-merge(dist,tool_rich,by=c("siteID","plotID"),all.x=T)
 names(dist.rich)
 unique(dist.rich$plotID)
 unique(dist$plotID)
 
 #subset Toolik for now because we only have disturbance data for it.
+#need disturbance data for Harvard Forest to create this.
 unique(dist.rich$siteID)
 dist.rich<-dist.rich[dist.rich$siteID=="TOOL",]
 head(dist.rich)
@@ -168,7 +172,7 @@ head(dist1)
 
 #Remerge dist1 with richness data
 # merge the disturbance distances with the richness plot-level dataset
-dist.rich1<-merge(dist1,richness,by=c("siteID","plotID"),all.x=T)
+dist.rich1<-merge(dist1,tool_rich,by=c("siteID","plotID"),all.x=T)
 names(dist.rich1)
 unique(dist.rich1$plotID)
 unique(dist1$plotID)
@@ -179,7 +183,6 @@ tool.dist.rich<-dist.rich1[dist.rich1$siteID=="TOOL",]
 head(tool.dist.rich)
 unique(tool.dist.rich$siteID)
 summary(tool.dist.rich)
-
 ##################################################################################################################################################################
 # ------------------------------------------------------------
 # Now we are going to look at elevation with species richness
@@ -198,6 +201,7 @@ unique(terrestrial$siteNam)
 #arc<-terrestrial[terrestrial$siteNam=="Toolik Lake","Harvard Forest",]
 arc<-terrestrial[terrestrial$siteNam=="Toolik Lake",]
 summary(arc)
+names(arc)
 plot(arc)
 
 #subset elevation, slope, aspect, and landcover from NEON terrestrial data
@@ -216,54 +220,174 @@ head(arc_env)
 
 #merge the elevation data with richness plot-level dataset
 arc_env<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_environment.csv")
-env.rich<-merge(arc_env,dist.rich1,by=c("siteID", "plotID"), all.x=T, all.y=T)
+env.rich<-merge(arc_env,tool.dist.rich,by=c("siteID", "plotID"), all.x=T, all.y=T)
 head(env.rich)
+#################################################################################
+#Get rid of all other columns except: elevation, slope, aspect, plant richness, bird richness, plotID, siteID, landcover
+keep=c("plotID", "siteID", "taxa","richness", "elevatn", "slpAspc", "slpGrdn", "nlcdCls", "distance_m.burn", "distance_m.roads", "distance_m.buildings", "distance_m.pipeline", "distance_m.thermokarst", "distance_m.water source")
+keep[!keep %in% names(env.rich)]
 
-#subset maximum richness per plotID.
-rich.max<-env.rich%>%
+tool.env.rich <- env.rich
+tool.env.rich <- tool.env.rich[,keep] 
+write.csv(tool.env.rich, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\tool_env_rich.csv", row.names=F)
+names(tool.env.rich)
+head(tool.env.rich)
+
+##################################################################################Separate birds and plants richness
+#birds
+arc_bird<-tool.env.rich[tool.env.rich$taxa=="bird",]
+summary(arc_bird)
+
+#plants
+arc_plant<-tool.env.rich[tool.env.rich$taxa=="plant",]
+summary(arc_plant)
+#################################################################################
+#Plants
+#subset maximum richness.plant per plotID.
+plant.rich.max<-arc_plant%>%
   group_by(plotID, taxa, elevatn, nlcdCls, slpAspc, slpGrdn, distance_m.buildings, distance_m.burn, distance_m.pipeline, distance_m.thermokarst, `distance_m.water source`, distance_m.roads) %>%
   slice(which.max(richness))
-head(rich.max)
-rich.max<-data.frame(rich.max)
-unique(rich.max$plotID)
-write.csv(rich.max, file="elev.rich.csv")
-names(rich.max)
+head(plant.rich.max)
+plant.rich.max<-data.frame(plant.rich.max)
+unique(plant.rich.max$plotID)
+write.csv(plant.rich.max, file="elev.plantrich.csv")
+names(plant.rich.max)
 
-# take a look at the relationship between richness and elevation, by year
-e <- ggplot(rich.max, aes(x=elevatn, y=richness)) +
-  geom_point(aes()) + facet_wrap(~taxa, scales="free_y")  
-e
+# take a look at the relationship between plant richness and elevation, by year
+ep <- ggplot(plant.rich.max, aes(x=elevatn, y=richness)) +
+  geom_point(aes()) 
+ep
 
 # log transform for scatter plot
-el <- ggplot(rich.max, aes(x=elevatn, y=richness)) +
-  geom_point(aes()) +
-  facet_wrap(~taxa, scales="free_y") + scale_y_log10()  
-el
+epl <- ggplot(plant.rich.max, aes(x=elevatn, y=richness)) +
+  geom_point(aes()) + scale_y_log10()  
+epl
+##################################################################################See which data need to be log transformed by looking at a histogram. If the data is skewed, log transform it before running the model.
 
+#plant
+hist(plant.rich.max$richness)
+plant.rich.max$ln.richness<-log(plant.rich.max$richness)
+summary(plant.rich.max)
+hist(plant.rich.max$ln.richness)
+
+#roads
+hist(plant.rich.max$distance_m.roads)
+plant.rich.max$ln.distance_m.roads<-log(plant.rich.max$distance_m.roads)
+summary(plant.rich.max)
+hist(plant.rich.max$ln.distance_m.roads)
+
+#buildings
+hist(plant.rich.max$distance_m.buildings)
+
+#burn
+hist(plant.rich.max$distance_m.burn)
+plant.rich.max$ln.distance_m.burn<-log(plant.rich.max$distance_m.burn)
+summary(plant.rich.max$ln.distance_m.burn)
+hist(plant.rich.max$ln.distance_m.burn)
+#################################################################################
+#Birds
+#subset maximum richness.bird per plotID.
+bird.rich.max<-arc_bird%>%
+  group_by(plotID, elevatn, nlcdCls, slpAspc, slpGrdn, distance_m.buildings, distance_m.burn, distance_m.pipeline, distance_m.thermokarst, `distance_m.water source`, distance_m.roads) %>%
+  slice(which.max(richness))
+head(bird.rich.max)
+bird.rich.max<-data.frame(bird.rich.max)
+unique(bird.rich.max$plotID)
+write.csv(bird.rich.max, file="elev.birdrich.csv")
+names(bird.rich.max)
+
+# take a look at the relationship between bird richness and elevation, by year
+er <- ggplot(bird.rich.max, aes(x=elevatn, y=richness)) +
+  geom_point(aes()) 
+er
+
+# log transform for scatter plot
+erl <- ggplot(bird.rich.max, aes(x=elevatn, y=richness)) +
+  geom_point(aes()) + scale_y_log10()  
+erl
+names(bird.rich.max)
+##################################################################################See which data need to be log transformed by looking at a histogram. If the data is skewed, log transform it before running the model.
+
+#birds
+hist(bird.rich.max$richness)
+bird.rich.max$ln.richness<-log(bird.rich.max$richness)
+summary(bird.rich.max)
+hist(bird.rich.max$ln.richness)
+
+#roads
+hist(bird.rich.max$distance_m.roads)
+
+#buildings
+hist(bird.rich.max$distance_m.buildings)
+
+#burn
+hist(bird.rich.max$distance_m.burn)
+bird.rich.max$ln.distance_m.burn<-log(bird.rich.max$distance_m.burn)
+summary(bird.rich.max$ln.distance_m.burn)
+hist(bird.rich.max$ln.distance_m.burn)
+
+#water source
+hist(bird.rich.max$distance_m.water.source)
+bird.rich.max$ln.distance_m.water.source<-log(bird.rich.max$distance_m.water.source)
+summary(bird.rich.max$ln.distance_m.water.source)
+hist(bird.rich.max$ln.distance_m.water.source)
+
+#elevation
+hist(bird.rich.max$elevatn)
+
+#slpGrdn
+hist(bird.rich.max$slpGrdn)
+bird.rich.max$ln.slpGrdn<-log(bird.rich.max$slpGrdn)
+summary(bird.rich.max$ln.slpGrdn)
+hist(bird.rich.max$ln.slpGrdn)
+
+#slpAspc
+hist(bird.rich.max$slpAspc)
+bird.rich.max$ln.slpAspc<-log(bird.rich.max$slpAspc)
+summary(bird.rich.max$ln.slpAspc)
+hist(bird.rich.max$ln.slpAspc)
+
+names(bird.rich.max)
+bird_rich<- na.omit(bird.rich.max)
+head(bird_rich)
 ##################################################################################################################################################################
-# Add a line of code that removes all columns except siteID, plotID, taxa, richness, dist_type, distance_m, slpGrdn, slpAspc, year, and nlcdCls.
-
-keep=c("siteID", "plotID", "year", "taxa", "richness", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "distance_m.burn", "distance_m.buildings", "distance_m.pipeline", "distance_m.thermokarst", "distance_m.water.source", "distance_m.roads")
-
-keep[!keep %in% names(rich.max)]
-env.rich <- rich.max[,keep]  
-head(env.rich)
-names(env.rich)
-
-# This is the first linear model. First is the species richness data ~ all your predictor variables.
-m1<-lm(env.rich$richness~env.rich$distance_m.burn+
-         env.rich$distance_m.buildings+
-         env.rich$distance_m.pipeline+
-         env.rich$distance_m.thermokarst+
-         env.rich$distance_m.water.source+
-         env.rich$distance_m.roads+
-         env.rich$elevatn+
-         env.rich$slpGrdn+
-         env.rich$slpAspc)
-summary(m1)
+# This is the first linear model. First is the plant species richness data ~ all your predictor variables.
+pm1<-lm(plant.rich.max$ln.richness~plant.rich.max$ln.distance_m.burn+
+         plant.rich.max$distance_m.buildings+
+         plant.rich.max$distance_m.water.source+
+         plant.rich.max$distance_m.roads+
+         plant.rich.max$elevatn+
+         plant.rich.max$slpGrdn+
+         plant.rich.max$slpAspc)
+summary(pm1)
 #Follow this link if you need help interpreting your summary. https://www.quora.com/How-do-I-interpret-the-summary-of-a-linear-model-in-R
 
-anova(m1)
+anova(pm1)
+
+# We need to check the normality of this model so that we can ensure that everything is relatively normally distributed.
+library(car)
+qqPlot(pm1)
+plot(pm1)
+
+#################################################################################
+# This is the second linear model. First is the bird species richness data ~ all your predictor variables.
+bm1<-lm(bird_rich$ln.richness~bird_rich$ln.distance_m.burn+
+          bird_rich$distance_m.buildings+
+          bird_rich$distance_m.water.source+
+          bird_rich$distance_m.roads+
+          bird_rich$elevatn+
+          bird_rich$slpGrdn+
+          bird_rich$slpAspc)
+summary(bm1)
+#Follow this link if you need help interpreting your summary. https://www.quora.com/How-do-I-interpret-the-summary-of-a-linear-model-in-R
+
+anova(bm1)
+
+# Normality of Residuals
+# qq plot for studentized resid
+library(car)
+qqPlot(bm1)
+plot(bm1)
 
 # Check out these example scripts to assess normality, outliers, etc: https://www.statmethods.net/stats/rdiagnostics.html
 # use qqplot() at least
