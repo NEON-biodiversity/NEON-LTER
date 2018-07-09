@@ -98,17 +98,21 @@ head(plants)
 #head(zoop)
 
 # merge all taxonomic data together; before you do this, make sure there is a column for taxa.
-rich<-rbind(mammals, birds, plants)
+rich<-rbind(birds, plants)
 
 #subset data for Toolik.
 unique(rich$siteID)
+#Did not work!
+#richness<-rich[rich$siteID=="TOOL", "HARV",]
 richness<-rich[rich$siteID=="TOOL",]
 head(richness)
 str(richness)
 
 # merge the disturbance distances with the richness plot-level dataset
-dist.rich<-merge(dist,rich,by=c("siteID","plotID"),all.x=T, all.y=T)
-head(dist.rich)
+dist.rich<-merge(dist,richness,by=c("siteID","plotID"),all.x=T)
+names(dist.rich)
+unique(dist.rich$plotID)
+unique(dist$plotID)
 
 #subset Toolik for now because we only have disturbance data for it.
 unique(dist.rich$siteID)
@@ -151,47 +155,79 @@ q <- ggplot(dist.rich.max, aes(richness)) +
   geom_histogram() +
   facet_wrap(~taxa, scales="free") + scale_x_log10()  
 q
+#----------------------------------------------------------
+# Convert distance file to wide format for modeling
+#----------------------------------------------------------
+# Wide format for disturbance
+dist1<-reshape(dist, v.names="distance_m",    # the values you want to transpose to wide format
+               idvar=c("siteID","plotID", "siteNam"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
+               timevar="dist_type",  # the name of the grouping variable.
+               direction="wide") # the direction (can also be long)
+str(dist1)
+head(dist1)
+
+#Remerge dist1 with richness data
+# merge the disturbance distances with the richness plot-level dataset
+dist.rich1<-merge(dist1,richness,by=c("siteID","plotID"),all.x=T)
+names(dist.rich1)
+unique(dist.rich1$plotID)
+unique(dist1$plotID)
+
+#subset Toolik for now because we only have disturbance data for it.
+unique(dist.rich1$siteID)
+tool.dist.rich<-dist.rich1[dist.rich1$siteID=="TOOL",]
+head(tool.dist.rich)
+unique(tool.dist.rich$siteID)
+summary(tool.dist.rich)
+
 ##################################################################################################################################################################
 # ------------------------------------------------------------
 # Now we are going to look at elevation with species richness
 # ------------------------------------------------------------
 
+library(rgdal)
+
 #elevation subset from all NEON spatial data
 terrestrial<- readOGR("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_Neon_TOS_Centroid_V4.shp")
 plot(terrestrial, col=cm.colors(5), alpha=1, legend=F, main="Terrestrial Data")
+head(terrestrial)
 
 #To subset the data specifically to your site. You must use the exact name as it is written in the data. To look this up, use the following function to list all of the names of the field sites.
 unique(terrestrial$siteNam)
+#Figure out why the richness HARV & TOOL subset didn't work before running the elevation extraction.
+#arc<-terrestrial[terrestrial$siteNam=="Toolik Lake","Harvard Forest",]
 arc<-terrestrial[terrestrial$siteNam=="Toolik Lake",]
 summary(arc)
 plot(arc)
 
-#subset elevation data
-myvars <- c("elevatn", "siteID", "plotID")
-elevation <- arc[myvars]
-head(elevation)
-str(elevation)
-#Currently, it is in latitude and longitude, but in order to measure distance in meters we need to reproject the data into UTMs. You should look up the appropriate zone for your site. For the Toolik Lake Field Station we needed UTM Zone 6. 
-arc_elev<-spTransform(elevation, CRS("+proj=utm +zone=6 ellps=WGS84"))
-str(arc_elev)
+#subset elevation, slope, aspect, and landcover from NEON terrestrial data
+myvars <- c("elevatn", "siteID", "plotID", "nlcdCls", "slpGrdn", "slpAspc")
+env <- arc[myvars]
+head(env)
+str(env)
 
-write.csv(arc_elev, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_elevation.csv", row.names=F)
-head(arc_elev)
+#Currently, it is in latitude and longitude, but in order to measure distance in meters we need to reproject the data into UTMs. You should look up the appropriate zone for your site. For the Toolik Lake Field Station we needed UTM Zone 6. 
+arc_env<-spTransform(env, CRS("+proj=utm +zone=6 ellps=WGS84"))
+str(arc_env)
+
+write.csv(arc_env, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_environment.csv", row.names=F)
+head(arc_env)
 #writing a csv is necessary to merge the files. It will NOT work without first writing a csv and importing it again. 
 
 #merge the elevation data with richness plot-level dataset
-tool_elev<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_elevation.csv")
-elev.rich<-merge(tool_elev,richness,by=c("siteID", "plotID"), all.x=T, all.y=T)
-head(elev.rich)
+arc_env<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_environment.csv")
+env.rich<-merge(arc_env,dist.rich1,by=c("siteID", "plotID"), all.x=T, all.y=T)
+head(env.rich)
 
 #subset maximum richness per plotID.
-rich.max<-elev.rich%>%
-  group_by(plotID, taxa, elevatn) %>%
+rich.max<-env.rich%>%
+  group_by(plotID, taxa, elevatn, nlcdCls, slpAspc, slpGrdn, distance_m.buildings, distance_m.burn, distance_m.pipeline, distance_m.thermokarst, `distance_m.water source`, distance_m.roads) %>%
   slice(which.max(richness))
 head(rich.max)
 rich.max<-data.frame(rich.max)
 unique(rich.max$plotID)
 write.csv(rich.max, file="elev.rich.csv")
+names(rich.max)
 
 # take a look at the relationship between richness and elevation, by year
 e <- ggplot(rich.max, aes(x=elevatn, y=richness)) +
@@ -205,26 +241,28 @@ el <- ggplot(rich.max, aes(x=elevatn, y=richness)) +
 el
 
 ##################################################################################################################################################################
-# convert data back to wide format for easier modeling (might need to load reshape package)
-# can also probably do this in dplyr
-# First add a line of code that removes all columns except siteID, plotID, taxa, richness, dist_type, distance_m
-keep=c("siteID", "plotID", "taxa", "richness", "dist_type", "distance_m")
-dist.rich <- dist.rich[,keep]  
-head(dist.rich)
-# Wide format
-  dist.rich1<-reshape(dist.rich, v.names="dist_type",    # the variable you want to transpose to wide format
-                      idvar=c("siteID","plotID"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
-                      timevar="distance_m",  # what do you want to fill the column, "v.names" with?
-                      direction="wide") # the direction (can also be long)
-str(dist.rich1)
-# For mammals, run linear model to investigate how disturbance explains richness variability
+# Add a line of code that removes all columns except siteID, plotID, taxa, richness, dist_type, distance_m, slpGrdn, slpAspc, year, and nlcdCls.
 
-# change to reflect actual column names in dist.rich1 
-m1<-lm(dist.rich1$richness~dist.rich1$distance_m+
-         dist.rich1$disturbance2distance+
-         dist.rich1$disturbance3distance+
-         dist.rich1$disturbance4distance)
+keep=c("siteID", "plotID", "year", "taxa", "richness", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "distance_m.burn", "distance_m.buildings", "distance_m.pipeline", "distance_m.thermokarst", "distance_m.water.source", "distance_m.roads")
+
+keep[!keep %in% names(rich.max)]
+env.rich <- rich.max[,keep]  
+head(env.rich)
+names(env.rich)
+
+# This is the first linear model. First is the species richness data ~ all your predictor variables.
+m1<-lm(env.rich$richness~env.rich$distance_m.burn+
+         env.rich$distance_m.buildings+
+         env.rich$distance_m.pipeline+
+         env.rich$distance_m.thermokarst+
+         env.rich$distance_m.water.source+
+         env.rich$distance_m.roads+
+         env.rich$elevatn+
+         env.rich$slpGrdn+
+         env.rich$slpAspc)
 summary(m1)
+#Follow this link if you need help interpreting your summary. https://www.quora.com/How-do-I-interpret-the-summary-of-a-linear-model-in-R
+
 anova(m1)
 
 # Check out these example scripts to assess normality, outliers, etc: https://www.statmethods.net/stats/rdiagnostics.html
