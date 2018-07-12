@@ -26,49 +26,170 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
 #You need to load all the workspace from the prep to be able to do any modeling.
 load("neon_within_site_prep.RData")
 
+#Correlation Tests this computes all pairwise correlations using Pearson's correlation test.
+pairs.panels(plant.rich.max[c(5,8:13)])
+
 # This is the first linear model. First is the plant species richness data ~ all your predictor variables.
-pm1<-lm(plant.rich.max$ln.richness~plant.rich.max$ln.distance_m.burn+
-          plant.rich.max$distance_m.buildings+
-          plant.rich.max$distance_m.water.source+
+pm1<-lm(plant.rich.max$ln.richness~plant.rich.max$distance_m.buildings+
+          plant.rich.max$distance_m.pipeline+
+          plant.rich.max$distance_m.thermokarst+
           plant.rich.max$distance_m.roads+
+          plant.rich.max$nlcdCls+
           plant.rich.max$elevatn)
 summary(pm1)
+#significant variables: roads and herbaceous 
+
 #Follow this link if you need help interpreting your summary. https://www.quora.com/How-do-I-interpret-the-summary-of-a-linear-model-in-R
-
-# This is where we will start creating a reduced model to see if we can find more significant variables within the model. We will take out all variables with p-values above 0.4.
-pm2<-lm(plant.rich.max$ln.richness~plant.rich.max$ln.distance_m.burn+
-          plant.rich.max$distance_m.buildings+
-          plant.rich.max$distance_m.roads+
-          plant.rich.max$elevatn)
-summary(pm2)
-
-anova(pm1, pm2)
 
 # We need to check the normality of this model so that we can ensure that everything is relatively normally distributed.
 library(car)
 qqPlot(pm1)
 plot(pm1)
 
-#################################################################################
-# This is the second linear model. First is the bird species richness data ~ all your predictor variables.
-bm1<-lm(bird_rich$ln.richness~bird_rich$ln.distance_m.burn+
-          bird_rich$distance_m.buildings+
-          bird_rich$distance_m.water.source+
-          bird_rich$distance_m.roads+
-          bird_rich$elevatn+
-          bird_rich$slpGrdn+
-          bird_rich$slpAspc)
-summary(bm1)
-#Follow this link if you need help interpreting your summary. https://www.quora.com/How-do-I-interpret-the-summary-of-a-linear-model-in-R
+#Reduced Model 1 - remove pipeline
+pm2<-lm(plant.rich.max$ln.richness~plant.rich.max$distance_m.buildings+
+          plant.rich.max$distance_m.thermokarst+
+          plant.rich.max$distance_m.roads+
+          plant.rich.max$nlcdCls+
+          plant.rich.max$elevatn)
+summary(pm2)
+#significant variables: roads and herbaceous 
 
-anova(bm1)
+#Reduced Model 2 - remove buildings
+pm3<-lm(plant.rich.max$ln.richness~
+          plant.rich.max$distance_m.thermokarst+
+          plant.rich.max$distance_m.roads+
+          plant.rich.max$nlcdCls+
+          plant.rich.max$elevatn)
+summary(pm3)
+#significant variables: roads and herbaceous 
+
+#Reduced Model 3 - remove thermokarst
+pm4<-lm(plant.rich.max$ln.richness~
+          plant.rich.max$distance_m.roads+
+          plant.rich.max$nlcdCls+
+          plant.rich.max$elevatn)
+summary(pm4)
+#significant variables: roads and herbaceous 
+
+#Reduced Model 4: remove elevation
+pm5<-lm(plant.rich.max$ln.richness~
+          plant.rich.max$distance_m.roads+
+          plant.rich.max$nlcdCls)
+summary(pm5)
+#significant variables: roads, herbaceous, intercept
+
+#Reduced Model 5
+pm6<-lm(plant.rich.max$ln.richness~
+          plant.rich.max$distance_m.roads)
+summary(pm6)
+#significant variables: roads
+
+#Reduced Model 6
+pm7<-lm(plant.rich.max$ln.richness~
+          plant.rich.max$nlcdCls)
+summary(pm7)
+#significant variables: herbaceous
+
+#ANOVA
+anova(pm1, pm2) #Not Significant
+anova(pm1, pm3) #Not Significant
+anova(pm1, pm4) #Not Significant
+anova(pm1, pm5) #Not Significant
+anova(pm1, pm6) #*****Significant******
+anova(pm1, pm7) #*****Significant******
+anova(pm2, pm3) #Not Significant
+anova(pm2, pm4) #Not Significant
+anova(pm2, pm5) #Not Significant
+anova(pm3, pm4) #Not Significant
+anova(pm3, pm5) #Not Significant
+anova(pm4, pm5) #Not Significant
+anova(pm5, pm6) #*****Significant******
+anova(pm5, pm7) #*****Significant******
+anova(pm6, pm7) #No P-Value
+
+# Roads
+rich.road<-ggplot(plant.rich.max, aes(x = plant.rich.max$distance_m.roads, y =plant.rich.max$ln.richness)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+rich.road+labs(title="Plants",
+                 x ="Distance to Road", y = "Species Richness")
+
+
+plot(plant.rich.max$distance_m.roads, plant.rich.max$ln.richness,main="Plants", xlab="Distance to Roads ", ylab="Species Richness")
+rich.road
+abline(pm6, col="red") # regression line (y~x)
+
+# Land Cover
+plot(plant.rich.max$nlcdCls, plant.rich.max$ln.richness,main="Plants", 
+     xlab="Landcover Type", ylab="Species Richness")
+
+# Remove outliers
+identify(plant.rich.max$distance_m.roads, plant.rich.max$ln.richness, labels=row.names(plant.rich.max)) 
+#Row name is 34 this is TOOL_041 plotID in plant.rich.max. We are going to remove this data point.
+plant.rich.max<-subset(plant.rich.max,plant.rich.max$plotID != "TOOL_041")
+
+################################################################################
+#Correlation Tests this computes all pairwise correlations using Pearson's correlation test.
+pairs.panels(bird.rich.max[c(5,8:13)])
+
+# This is the second linear model. First is the bird species richness data ~ all your predictor variables.
+bm1<-lm(bird.rich.max$ln.richness~
+          bird.rich.max$distance_m.buildings+
+          bird.rich.max$distance_m.thermokarst+
+          bird.rich.max$distance_m.pipeline+
+          bird.rich.max$distance_m.roads+
+          bird.rich.max$nlcdCls+
+          bird.rich.max$elevatn)
+summary(bm1)
+#Significant variables: roads
 
 # Normality of Residuals
-# qq plot for studentized resid
-library(car)
 qqPlot(bm1)
 plot(bm1)
 
+#Reduced model 1 - remove pipeline
+bm2<-lm(bird.rich.max$ln.richness~
+          bird.rich.max$distance_m.buildings+
+          bird.rich.max$distance_m.thermokarst+
+          bird.rich.max$distance_m.roads+
+          bird.rich.max$nlcdCls+
+          bird.rich.max$elevatn)
+summary(bm2)
+#Significant variables: roads
+
+#Reduced model 2 - remove buildings and elevation
+bm3<-lm(bird.rich.max$ln.richness~
+          bird.rich.max$distance_m.thermokarst+
+          bird.rich.max$distance_m.roads+
+          bird.rich.max$nlcdCls)
+summary(bm3)
+#Significant variables: roads & intercept
+
+#Reduced model 3 - remove thermokarst
+bm4<-lm(bird.rich.max$ln.richness~
+          bird.rich.max$distance_m.roads+
+          bird.rich.max$nlcdCls)
+summary(bm4)
+#Significant variables: roads & intercept
+
+#Reduced model 4 - remove land cover
+bm5<-lm(bird.rich.max$ln.richness~
+          bird.rich.max$distance_m.roads)
+summary(bm5)
+#Significant variables: roads & intercept
+
+#ANOVA
+anova(bm1, bm2) #Not Significant
+anova(bm1, bm3) #Not Significant
+anova(bm1, bm4) #Not Significant
+anova(bm1, bm5) #Not Significant
+anova(bm2, bm3) #Not Significant
+anova(bm2, bm4) #Not Significant
+anova(bm2, bm5) #Not Significant
+anova(bm3, bm4) #**Significant**
+anova(bm3, bm5) #Not Significant
+anova(bm4, bm5) #Not Significant
 # Check out these example scripts to assess normality, outliers, etc: https://www.statmethods.net/stats/rdiagnostics.html
 # use qqplot() at least
 # do data look normal? if not, then we will need to transform

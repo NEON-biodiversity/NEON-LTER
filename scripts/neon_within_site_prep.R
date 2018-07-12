@@ -111,79 +111,37 @@ tool_rich<-rich[rich$siteID=="TOOL",]
 head(tool_rich)
 str(tool_rich)
 
-# merge the disturbance distances with the richness plot-level dataset
-dist.rich<-merge(dist,tool_rich,by=c("siteID","plotID"),all.x=T)
-names(dist.rich)
-unique(dist.rich$plotID)
-unique(dist$plotID)
-
-#subset Toolik for now because we only have disturbance data for it.
-#need disturbance data for Harvard Forest to create this.
-unique(dist.rich$siteID)
-dist.rich<-dist.rich[dist.rich$siteID=="TOOL",]
-head(dist.rich)
-unique(dist.rich$siteID)
-summary(dist.rich)
-
-#subset maximum richness per plotID.
-#attach(dist.rich)
-#dist.rich.max<-aggregate(dist.rich[c("richness")],list(siteID=siteID,plotID=plotID, taxa=taxa, year=year, dist_type=dist_type, distance_m=distance_m), FUN=max, na.rm=T)
-#detach(dist.rich)
-
-dist.rich.max<-dist.rich%>%
-  group_by(plotID, taxa, dist_type) %>%
+#Take the maximum richness value before merging with distance data
+names(tool_rich)
+tool_rich_max<-tool_rich%>%
+  group_by(plotID, taxa) %>%
   slice(which.max(richness))
-head(dist.rich.max)
-dist.rich.max<-data.frame(dist.rich.max)
-unique(dist.rich.max$plotID)
-write.csv(dist.rich.max, file="dist.richtest.csv")
+head(tool_rich_max)
+tool_rich_max<-data.frame(tool_rich_max)
+unique(tool_rich_max$plotID)
+write.csv(tool_rich_max, file="richness_max.csv")
 #some plotIDs are NA for richness because they have not been surveyed yet.
 
-# take a look at the relationship between richness and distance to disturbance, by year, by disturbance type
-p <- ggplot(dist.rich.max, aes(x=distance_m, y=richness)) +
-  geom_point(aes(color=factor(dist_type), group=factor(dist_type))) +
-  facet_wrap(~taxa, scales="free_y")  
-p
-#look at richness distribution by taxa
-q <- ggplot(dist.rich.max, aes(richness)) +
-  geom_histogram() +
-  facet_wrap(~taxa, scales="free")  
-q
-#log transform for scatter plot
-r <- ggplot(dist.rich.max, aes(x=distance_m, y=richness)) +
-  geom_point(aes(color=factor(dist_type), group=factor(dist_type))) +
-  facet_wrap(~taxa, scales="free_y") + scale_y_log10()  
-r
-#log transform for histogram
-q <- ggplot(dist.rich.max, aes(richness)) +
-  geom_histogram() +
-  facet_wrap(~taxa, scales="free") + scale_x_log10()  
-q
+#subset
+keep=c("siteID", "plotID", "richness", "taxa")
+tool_rich_max<-tool_rich_max[,keep]
+head(tool_rich_max)
+
+#merge with distance data
+dist_rich<- merge(dist, tool_rich_max, by=c("siteID","plotID"),all.x=T)
+head(dist_rich)
+
 #----------------------------------------------------------
 # Convert distance file to wide format for modeling
 #----------------------------------------------------------
 # Wide format for disturbance
-dist1<-reshape(dist, v.names="distance_m",    # the values you want to transpose to wide format
-               idvar=c("siteID","plotID", "siteNam"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
+dist_rich1<-reshape(dist_rich, v.names="distance_m",    # the values you want to transpose to wide format
+               idvar=c("siteID","plotID", "siteNam", "richness", "taxa"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
                timevar="dist_type",  # the name of the grouping variable.
                direction="wide") # the direction (can also be long)
-str(dist1)
-head(dist1)
+str(dist_rich1)
+head(dist_rich1)
 
-#Remerge dist1 with richness data
-# merge the disturbance distances with the richness plot-level dataset
-dist.rich1<-merge(dist1,tool_rich,by=c("siteID","plotID"),all.x=T)
-names(dist.rich1)
-unique(dist.rich1$plotID)
-unique(dist1$plotID)
-
-#subset Toolik for now because we only have disturbance data for it.
-unique(dist.rich1$siteID)
-tool.dist.rich<-dist.rich1[dist.rich1$siteID=="TOOL",]
-head(tool.dist.rich)
-unique(tool.dist.rich$siteID)
-summary(tool.dist.rich)
-##################################################################################################################################################################
 # ------------------------------------------------------------
 # Now we are going to look at elevation with species richness
 # ------------------------------------------------------------
@@ -197,6 +155,7 @@ head(terrestrial)
 
 #To subset the data specifically to your site. You must use the exact name as it is written in the data. To look this up, use the following function to list all of the names of the field sites.
 unique(terrestrial$siteNam)
+
 #Figure out why the richness HARV & TOOL subset didn't work before running the elevation extraction.
 #arc<-terrestrial[terrestrial$siteNam=="Toolik Lake","Harvard Forest",]
 arc<-terrestrial[terrestrial$siteNam=="Toolik Lake",]
@@ -213,145 +172,85 @@ str(env)
 #Currently, it is in latitude and longitude, but in order to measure distance in meters we need to reproject the data into UTMs. You should look up the appropriate zone for your site. For the Toolik Lake Field Station we needed UTM Zone 6. 
 arc_env<-spTransform(env, CRS("+proj=utm +zone=6 ellps=WGS84"))
 str(arc_env)
+arc_env<-data.frame(arc_env)
+
+#We need to make sure we have one value for slope and elevation before proceeding. This shows the duplicate entries by plotID
+arc_env[duplicated(arc_env$plotID),]
+
+#Take the average of slp, asp, and elev by plotID.
+attach(arc_env)
+arc_env<-aggregate(arc_env[c("elevatn","slpAspc","slpGrdn")],list(plotID=plotID, nlcdCls=nlcdCls),FUN=mean)
+detach(arc_env)
+head(arc_env)
+
+#Check it
+arc_env[duplicated(arc_env$plotID),]
 
 write.csv(arc_env, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_environment.csv", row.names=F)
 head(arc_env)
 #writing a csv is necessary to merge the files. It will NOT work without first writing a csv and importing it again. 
 
-#merge the elevation data with richness plot-level dataset
-arc_env<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_environment.csv")
-env.rich<-merge(arc_env,tool.dist.rich,by=c("siteID", "plotID"), all.x=T, all.y=T)
-head(env.rich)
-#################################################################################
-#Get rid of all other columns except: elevation, slope, aspect, plant richness, bird richness, plotID, siteID, landcover
-keep=c("plotID", "siteID", "taxa","richness", "elevatn", "slpAspc", "slpGrdn", "nlcdCls", "distance_m.burn", "distance_m.roads", "distance_m.buildings", "distance_m.pipeline", "distance_m.thermokarst", "distance_m.water source")
-keep[!keep %in% names(env.rich)]
+#merge dist_rich1 and arc_env
+names(dist_rich1)
+names(arc_env)
+toolik<-merge(arc_env, dist_rich1, by=c("plotID"),all.x=T)
+head(toolik)
 
-tool.env.rich <- env.rich
-tool.env.rich <- tool.env.rich[,keep] 
-write.csv(tool.env.rich, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\tool_env_rich.csv", row.names=F)
-names(tool.env.rich)
-head(tool.env.rich)
-
-##################################################################################Separate birds and plants richness
+#Check for duplicates
+toolik[duplicated(toolik$plotID),]
+#Now that we have a code with all of the environment, richness, and distance data we can start subsetting by taxa.
+#--------------------------------------------------------------------------------
+#Separate birds and plants richness
+#--------------------------------------------------------------------------------
 #birds
-arc_bird<-tool.env.rich[tool.env.rich$taxa=="bird",]
-summary(arc_bird)
+arc_bird<-toolik[toolik$taxa=="bird",]
+head(arc_bird)
 
 #plants
-arc_plant<-tool.env.rich[tool.env.rich$taxa=="plant",]
-summary(arc_plant)
-#################################################################################
-#Plants
-#subset maximum richness.plant per plotID.
-plant.rich.max<-arc_plant%>%
-  group_by(plotID, taxa, elevatn, nlcdCls, slpAspc, slpGrdn, distance_m.buildings, distance_m.burn, distance_m.pipeline, distance_m.thermokarst, `distance_m.water source`, distance_m.roads) %>%
-  slice(which.max(richness))
-head(plant.rich.max)
-plant.rich.max<-data.frame(plant.rich.max)
-unique(plant.rich.max$plotID)
-write.csv(plant.rich.max, file="elev.plantrich.csv")
-names(plant.rich.max)
+arc_plant<-toolik[toolik$taxa=="plant",]
+head(arc_plant)
 
-# take a look at the relationship between plant richness and elevation, by year
-ep <- ggplot(plant.rich.max, aes(x=elevatn, y=richness)) +
+save.image("neon_within_site_prep.RData")
+#################################################################################
+# take a look at the relationship between plant richness and elevation
+ep <- ggplot(arc_plant, aes(x=elevatn, y=richness)) +
   geom_point(aes()) 
 ep
 
 # log transform for scatter plot
-epl <- ggplot(plant.rich.max, aes(x=elevatn, y=richness)) +
+epl <- ggplot(arc_plant, aes(x=elevatn, y=richness)) +
   geom_point(aes()) + scale_y_log10()  
 epl
-##################################################################################See which data need to be log transformed by looking at a histogram. If the data is skewed, log transform it before running the model.
-
-#plant
-hist(plant.rich.max$richness)
-plant.rich.max$ln.richness<-log(plant.rich.max$richness)
-summary(plant.rich.max)
-hist(plant.rich.max$ln.richness)
-
-#roads
-hist(plant.rich.max$distance_m.roads)
-plant.rich.max$ln.distance_m.roads<-log(plant.rich.max$distance_m.roads)
-summary(plant.rich.max)
-hist(plant.rich.max$ln.distance_m.roads)
-
-#buildings
-hist(plant.rich.max$distance_m.buildings)
-
-#burn
-hist(plant.rich.max$distance_m.burn)
-plant.rich.max$ln.distance_m.burn<-log(plant.rich.max$distance_m.burn)
-summary(plant.rich.max$ln.distance_m.burn)
-hist(plant.rich.max$ln.distance_m.burn)
-#################################################################################
-#Birds
-#subset maximum richness.bird per plotID.
-bird.rich.max<-arc_bird%>%
-  group_by(plotID, elevatn, nlcdCls, slpAspc, slpGrdn, distance_m.buildings, distance_m.burn, distance_m.pipeline, distance_m.thermokarst, `distance_m.water source`, distance_m.roads) %>%
-  slice(which.max(richness))
-head(bird.rich.max)
-bird.rich.max<-data.frame(bird.rich.max)
-unique(bird.rich.max$plotID)
-write.csv(bird.rich.max, file="elev.birdrich.csv")
-names(bird.rich.max)
 
 # take a look at the relationship between bird richness and elevation, by year
-er <- ggplot(bird.rich.max, aes(x=elevatn, y=richness)) +
+er <- ggplot(arc_bird, aes(x=elevatn, y=richness)) +
   geom_point(aes()) 
 er
 
 # log transform for scatter plot
-erl <- ggplot(bird.rich.max, aes(x=elevatn, y=richness)) +
+erl <- ggplot(arc_bird, aes(x=elevatn, y=richness)) +
   geom_point(aes()) + scale_y_log10()  
 erl
-names(bird.rich.max)
-##################################################################################See which data need to be log transformed by looking at a histogram. If the data is skewed, log transform it before running the model.
+#################################################################################
+#Histograms
+
+hist(arc_plant$richness)
+hist(arc_bird$richness)
+
+#################################################################################
+#log transformations
+
+#plant
+arc_plant$ln.richness<-log(arc_plant$richness)
+head(arc_plant)
+hist(arc_plant$ln.richness)
+
 
 #birds
-hist(bird.rich.max$richness)
-bird.rich.max$ln.richness<-log(bird.rich.max$richness)
-summary(bird.rich.max)
-hist(bird.rich.max$ln.richness)
+arc_bird$ln.richness<-log(arc_bird$richness)
+head(arc_bird)
+hist(arc_bird$ln.richness)
+#################################################################################
+#Now you're ready for modeling. See script neon_within_site_analysis.
 
-#roads
-hist(bird.rich.max$distance_m.roads)
 
-#buildings
-hist(bird.rich.max$distance_m.buildings)
-
-#burn
-hist(bird.rich.max$distance_m.burn)
-bird.rich.max$ln.distance_m.burn<-log(bird.rich.max$distance_m.burn)
-summary(bird.rich.max$ln.distance_m.burn)
-hist(bird.rich.max$ln.distance_m.burn)
-
-#water source
-hist(bird.rich.max$distance_m.water.source)
-bird.rich.max$ln.distance_m.water.source<-log(bird.rich.max$distance_m.water.source)
-summary(bird.rich.max$ln.distance_m.water.source)
-hist(bird.rich.max$ln.distance_m.water.source)
-
-#elevation
-hist(bird.rich.max$elevatn)
-
-#slpGrdn
-hist(bird.rich.max$slpGrdn)
-bird.rich.max$ln.slpGrdn<-log(bird.rich.max$slpGrdn)
-summary(bird.rich.max$ln.slpGrdn)
-hist(bird.rich.max$ln.slpGrdn)
-
-#slpAspc
-hist(bird.rich.max$slpAspc)
-bird.rich.max$ln.slpAspc<-log(bird.rich.max$slpAspc)
-summary(bird.rich.max$ln.slpAspc)
-hist(bird.rich.max$ln.slpAspc)
-
-names(bird.rich.max)
-bird_rich<- na.omit(bird.rich.max)
-head(bird_rich)
-
-save.image("neon_within_site_prep.RData")
-################################################################################
-
-#For modeling, go to script (neon_within_site_analysis)
