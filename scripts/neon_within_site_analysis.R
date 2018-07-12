@@ -136,16 +136,17 @@ plot(arc_plant$nlcdCls, arc_plant$ln.richness,main="Plants",
 #There is an outlier, but we are going to leave it because it does not significantly skew the data. Plus if it is removed, it gets rid of the box shape on the shrubScrub variable.
 ################################################################################
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test.
-pairs.panels(bird.rich.max[c(5,8:13)])
+names(arc_bird)
+pairs.panels(arc_bird[c(2:5,8,10:16)])
 
 # This is the second linear model. First is the bird species richness data ~ all your predictor variables.
-bm1<-lm(bird.rich.max$ln.richness~
-          bird.rich.max$distance_m.buildings+
-          bird.rich.max$distance_m.thermokarst+
-          bird.rich.max$distance_m.pipeline+
-          bird.rich.max$distance_m.roads+
-          bird.rich.max$nlcdCls+
-          bird.rich.max$elevatn)
+bm1<-lm(arc_bird$ln.richness~
+          arc_bird$distance_m.buildings+
+          arc_bird$distance_m.thermokarst+
+          arc_bird$distance_m.pipeline+
+          arc_bird$distance_m.roads+
+          arc_bird$nlcdCls+
+          arc_bird$elevatn)
 summary(bm1)
 #Significant variables: roads
 
@@ -154,33 +155,33 @@ qqPlot(bm1)
 plot(bm1)
 
 #Reduced model 1 - remove pipeline
-bm2<-lm(bird.rich.max$ln.richness~
-          bird.rich.max$distance_m.buildings+
-          bird.rich.max$distance_m.thermokarst+
-          bird.rich.max$distance_m.roads+
-          bird.rich.max$nlcdCls+
-          bird.rich.max$elevatn)
+bm2<-lm(arc_bird$ln.richness~
+          arc_bird$distance_m.buildings+
+          arc_bird$distance_m.thermokarst+
+          arc_bird$distance_m.roads+
+          arc_bird$nlcdCls+
+          arc_bird$elevatn)
 summary(bm2)
 #Significant variables: roads
 
 #Reduced model 2 - remove buildings and elevation
-bm3<-lm(bird.rich.max$ln.richness~
-          bird.rich.max$distance_m.thermokarst+
-          bird.rich.max$distance_m.roads+
-          bird.rich.max$nlcdCls)
+bm3<-lm(arc_bird$ln.richness~
+          arc_bird$distance_m.thermokarst+
+          arc_bird$distance_m.roads+
+          arc_bird$nlcdCls)
 summary(bm3)
 #Significant variables: roads & intercept
 
 #Reduced model 3 - remove thermokarst
-bm4<-lm(bird.rich.max$ln.richness~
-          bird.rich.max$distance_m.roads+
-          bird.rich.max$nlcdCls)
+bm4<-lm(arc_bird$ln.richness~
+          arc_bird$distance_m.roads+
+          arc_bird$nlcdCls)
 summary(bm4)
 #Significant variables: roads & intercept
 
 #Reduced model 4 - remove land cover
-bm5<-lm(bird.rich.max$ln.richness~
-          bird.rich.max$distance_m.roads)
+bm5<-lm(arc_bird$ln.richness~
+          arc_bird$distance_m.roads)
 summary(bm5)
 #Significant variables: roads & intercept
 
@@ -192,9 +193,64 @@ anova(bm1, bm5) #Not Significant
 anova(bm2, bm3) #Not Significant
 anova(bm2, bm4) #Not Significant
 anova(bm2, bm5) #Not Significant
-anova(bm3, bm4) #**Significant**
+anova(bm3, bm4) #Not Significant
 anova(bm3, bm5) #Not Significant
 anova(bm4, bm5) #Not Significant
-# Check out these example scripts to assess normality, outliers, etc: https://www.statmethods.net/stats/rdiagnostics.html
-# use qqplot() at least
-# do data look normal? if not, then we will need to transform
+
+# Remove outliers
+#roads
+plot(arc_bird$distance_m.roads, arc_bird$ln.richness)
+
+identify(arc_plant$distance_m.roads, arc_plant$ln.richness, labels=row.names(arc_plant)) 
+arc_plant$plotID
+#Row name is 34 this is TOOL_041 plotID in plant.rich.max. We are going to remove this data point. And any other outliers we identify.
+arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_041")
+arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_042")
+arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_043")
+plot(arc_plant$distance_m.roads, arc_plant$ln.richness)
+
+
+# Plot the relationship between ln.richness and the distance_m.roads
+bird_rich_road<-ggplot(arc_bird, aes(x = arc_bird$distance_m.roads, y =arc_bird$ln.richness)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+rich.road+labs(title="Birds",
+               x ="Distance to Road", y = "Species Richness")
+
+# Since land cover is also significant we should plot the richness and look at the relationship between them.
+plot(arc_plant$nlcdCls, arc_plant$ln.richness,main="Plants", 
+     xlab="Landcover Type", ylab="Species Richness")
+
+#There is an outlier, but we are going to leave it because it does not significantly skew the data. Plus if it is removed, it gets rid of the box shape on the shrubScrub variable.
+
+
+#Let's look at the relationship between bird richness and plant richness.
+arc_bird$ln.richness.b<-arc_bird$ln.richness
+arc_plant$ln.richness.p<-arc_plant$ln.richness
+bird.plant<-merge(arc_bird, arc_plant, by=c("plotID", "nlcdCls", "elevatn", "distance_m.roads"))
+names(bird.plant)
+
+#Remove unnecessary columns
+bird.plant<-bird.plant[c(-(5:16))]
+names(bird.plant)
+bird.plant1<- bird.plant[c(-(6:17))]
+
+#plot
+bird.plant.rich<-ggplot(bird.plant1, aes(x = ln.richness.p, y =ln.richness.b)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+bird.plant.rich+labs(title="Richness",
+                     x ="plant richness", y = "bird richness")
+
+#we should look at a model that incorporates distance to roads since that was the significant variable for both pm and bm models.
+
+bpm1<-lm(bird.plant1$ln.richness.b~bird.plant1$ln.richness.p+
+          bird.plant1$distance_m.roads)
+summary(bpm1)
+
+bpm2<-lm(bird.plant1$ln.richness.b~bird.plant1$ln.richness.p*
+           bird.plant1$distance_m.roads)
+summary(bpm2)
+
+anova(bpm1, bpm2)
+
