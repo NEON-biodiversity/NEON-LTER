@@ -27,15 +27,16 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
 load("neon_within_site_prep.RData")
 
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test.
-pairs.panels(plant.rich.max[c(5,8:13)])
+names(arc_plant)
+pairs.panels(arc_plant[c(2:5,8,10:15)])
 
 # This is the first linear model. First is the plant species richness data ~ all your predictor variables.
-pm1<-lm(plant.rich.max$ln.richness~plant.rich.max$distance_m.buildings+
-          plant.rich.max$distance_m.pipeline+
-          plant.rich.max$distance_m.thermokarst+
-          plant.rich.max$distance_m.roads+
-          plant.rich.max$nlcdCls+
-          plant.rich.max$elevatn)
+pm1<-lm(arc_plant$ln.richness~arc_plant$distance_m.buildings+
+          arc_plant$distance_m.pipeline+
+          arc_plant$distance_m.thermokarst+
+          arc_plant$distance_m.roads+
+          arc_plant$nlcdCls+
+          arc_plant$elevatn)
 summary(pm1)
 #significant variables: roads and herbaceous 
 
@@ -47,56 +48,56 @@ qqPlot(pm1)
 plot(pm1)
 
 #Reduced Model 1 - remove pipeline
-pm2<-lm(plant.rich.max$ln.richness~plant.rich.max$distance_m.buildings+
-          plant.rich.max$distance_m.thermokarst+
-          plant.rich.max$distance_m.roads+
-          plant.rich.max$nlcdCls+
-          plant.rich.max$elevatn)
+pm2<-lm(arc_plant$ln.richness~arc_plant$distance_m.buildings+
+          arc_plant$distance_m.thermokarst+
+          arc_plant$distance_m.roads+
+          arc_plant$nlcdCls+
+          arc_plant$elevatn)
 summary(pm2)
 #significant variables: roads and herbaceous 
 
 #Reduced Model 2 - remove buildings
-pm3<-lm(plant.rich.max$ln.richness~
-          plant.rich.max$distance_m.thermokarst+
-          plant.rich.max$distance_m.roads+
-          plant.rich.max$nlcdCls+
-          plant.rich.max$elevatn)
+pm3<-lm(arc_plant$ln.richness~
+          arc_plant$distance_m.thermokarst+
+          arc_plant$distance_m.roads+
+          arc_plant$nlcdCls+
+          arc_plant$elevatn)
 summary(pm3)
 #significant variables: roads and herbaceous 
 
 #Reduced Model 3 - remove thermokarst
-pm4<-lm(plant.rich.max$ln.richness~
-          plant.rich.max$distance_m.roads+
-          plant.rich.max$nlcdCls+
-          plant.rich.max$elevatn)
+pm4<-lm(arc_plant$ln.richness~
+          arc_plant$distance_m.roads+
+          arc_plant$nlcdCls+
+          arc_plant$elevatn)
 summary(pm4)
 #significant variables: roads and herbaceous 
 
 #Reduced Model 4: remove elevation
-pm5<-lm(plant.rich.max$ln.richness~
-          plant.rich.max$distance_m.roads+
-          plant.rich.max$nlcdCls)
+pm5<-lm(arc_plant$ln.richness~
+          arc_plant$distance_m.roads+
+          arc_plant$nlcdCls)
 summary(pm5)
 #significant variables: roads, herbaceous, intercept
 
 #Reduced Model 5
-pm6<-lm(plant.rich.max$ln.richness~
-          plant.rich.max$distance_m.roads)
+pm6<-lm(arc_plant$ln.richness~
+          arc_plant$distance_m.roads)
 summary(pm6)
-#significant variables: roads
+#significant variables: roads and intercept
 
 #Reduced Model 6
-pm7<-lm(plant.rich.max$ln.richness~
-          plant.rich.max$nlcdCls)
+pm7<-lm(arc_plant$ln.richness~
+          arc_plant$nlcdCls)
 summary(pm7)
-#significant variables: herbaceous
+#significant variables: intercept
 
 #ANOVA
 anova(pm1, pm2) #Not Significant
 anova(pm1, pm3) #Not Significant
 anova(pm1, pm4) #Not Significant
 anova(pm1, pm5) #Not Significant
-anova(pm1, pm6) #*****Significant******
+anova(pm1, pm6) #Not Significant
 anova(pm1, pm7) #*****Significant******
 anova(pm2, pm3) #Not Significant
 anova(pm2, pm4) #Not Significant
@@ -108,27 +109,31 @@ anova(pm5, pm6) #*****Significant******
 anova(pm5, pm7) #*****Significant******
 anova(pm6, pm7) #No P-Value
 
-# Roads
-rich.road<-ggplot(plant.rich.max, aes(x = plant.rich.max$distance_m.roads, y =plant.rich.max$ln.richness)) + 
+# Remove outliers
+#roads
+plot(arc_plant$distance_m.roads, arc_plant$ln.richness)
+
+identify(arc_plant$distance_m.roads, arc_plant$ln.richness, labels=row.names(arc_plant)) 
+arc_plant$plotID
+#Row name is 34 this is TOOL_041 plotID in plant.rich.max. We are going to remove this data point. And any other outliers we identify.
+arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_041")
+arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_042")
+arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_043")
+plot(arc_plant$distance_m.roads, arc_plant$ln.richness)
+
+
+# Plot the relationship between ln.richness and the distance_m.roads
+rich.road<-ggplot(arc_plant, aes(x = arc_plant$distance_m.roads, y =arc_plant$ln.richness)) + 
   geom_point() +
   stat_smooth(method = "lm", col = "blue")
 rich.road+labs(title="Plants",
-                 x ="Distance to Road", y = "Species Richness")
+               x ="Distance to Road", y = "Species Richness")
 
-
-plot(plant.rich.max$distance_m.roads, plant.rich.max$ln.richness,main="Plants", xlab="Distance to Roads ", ylab="Species Richness")
-rich.road
-abline(pm6, col="red") # regression line (y~x)
-
-# Land Cover
-plot(plant.rich.max$nlcdCls, plant.rich.max$ln.richness,main="Plants", 
+# Since land cover is also significant we should plot the richness and look at the relationship between them.
+plot(arc_plant$nlcdCls, arc_plant$ln.richness,main="Plants", 
      xlab="Landcover Type", ylab="Species Richness")
 
-# Remove outliers
-identify(plant.rich.max$distance_m.roads, plant.rich.max$ln.richness, labels=row.names(plant.rich.max)) 
-#Row name is 34 this is TOOL_041 plotID in plant.rich.max. We are going to remove this data point.
-plant.rich.max<-subset(plant.rich.max,plant.rich.max$plotID != "TOOL_041")
-
+#There is an outlier, but we are going to leave it because it does not significantly skew the data. Plus if it is removed, it gets rid of the box shape on the shrubScrub variable.
 ################################################################################
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test.
 pairs.panels(bird.rich.max[c(5,8:13)])

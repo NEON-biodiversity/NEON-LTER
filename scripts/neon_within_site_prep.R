@@ -196,6 +196,16 @@ names(arc_env)
 toolik<-merge(arc_env, dist_rich1, by=c("plotID"),all.x=T)
 head(toolik)
 
+#Get rid of NAs for plots not sampled yet.
+toolik<- subset(toolik,is.na(toolik$richness)==F)
+toolik$richness
+
+#Get rid of unused Factor levels
+toolik$nlcdCls <- factor(toolik$nlcdCls)
+toolik$nlcdCls
+toolik$plotID <- factor(toolik$plotID)
+toolik$plotID
+
 #Check for duplicates
 toolik[duplicated(toolik$plotID),]
 #Now that we have a code with all of the environment, richness, and distance data we can start subsetting by taxa.
@@ -209,8 +219,6 @@ head(arc_bird)
 #plants
 arc_plant<-toolik[toolik$taxa=="plant",]
 head(arc_plant)
-
-save.image("neon_within_site_prep.RData")
 #################################################################################
 # take a look at the relationship between plant richness and elevation
 ep <- ggplot(arc_plant, aes(x=elevatn, y=richness)) +
@@ -250,6 +258,7 @@ hist(arc_plant$ln.richness)
 arc_bird$ln.richness<-log(arc_bird$richness)
 head(arc_bird)
 hist(arc_bird$ln.richness)
+save.image("neon_within_site_prep.RData")
 #################################################################################
 #Now you're ready for modeling. See script neon_within_site_analysis.
 
