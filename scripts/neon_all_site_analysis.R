@@ -2,6 +2,12 @@
 # Author: Cameo Chilcutt
 # Date: 12 July 2018
 
+#Clear all existing data
+rm(list=ls())
+
+#Close graphics devices
+graphics.off()
+
 # Set file paths
 google_drive <- 'G:\\My Drive\\NEON_LTER_2018\\data'
 setwd(file.path(google_drive, 'final_data\\neon')) # GD location
