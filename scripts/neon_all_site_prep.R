@@ -105,6 +105,10 @@ knz_final$coords.x1<-NULL
 knz_final$coords.x2<-NULL
 knz_final$coords.x1.1<-NULL
 knz_final$coords.x2.1<-NULL
+knz_final$coords.x1.2<-NULL
+knz_final$coords.x2.2<-NULL
+knz_final$coords.x1.3<-NULL
+knz_final$coords.x2.3<-NULL
 knz_final$optional<-NULL
 head(knz_final)
 
@@ -125,34 +129,52 @@ head(hrf_final)
 names(toolik)[names(toolik)=="distance_m.roads"]<-"roads_dist"
 names(toolik)[names(toolik)=="distance_m.thermokarst"]<-"thermo_dist"
 names(toolik)[names(toolik)=="distance_m.pipeline"]<-"pipe_dist"
-names(toolik)[names(toolik)=="distance_m.burn"]<-"burn_dist"
+names(toolik)[names(toolik)=="burn_dist"]<-"severe_dist"
 names(toolik)[names(toolik)=="distance_m.buildings"]<-"bldgs_dist"
 head(toolik)
+
+#Konza
+names(knz_final)[names(knz_final)=="burn_dist"]<-"severe_dist"
+knz_final<-data.frame(knz_final)
+head(knz_final)
+
+#Change all 0 values for distance to 0.001
+knz_final$severe_dist[knz_final$severe_dist == 0] <- 1
+head(knz_final)
+
+#Harvard
+names(hrf_final)[names(hrf_final)=="cut_dist"]<-"severe_dist"
+hrf_final<-data.frame(hrf_final)
+head(hrf_final)
+#Change all 0 values for distance to 0.001
+hrf_final$severe_dist[hrf_final$severe_dist == 0] <- 1
+head(hrf_final)
 
 #Bind these dataframes. We want to use rbind to stack our data. So, they need to have the same column names across all data frames. We really only care about having bldgs_dist and roads_dist for the distance variables. We need all of the environmental variables.
 #Konza
 head(knz_final)
-knz_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist")
+knz_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
 knz_final <- knz_final[knz_vari]
 head(knz_final)
 #Harvard
 head(hrf_final)
-hrf_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist")
+hrf_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
 hrf_final <- hrf_final[hrf_vari]
 head(hrf_final)
 #Toolik
 head(toolik)
-tool_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist")
+tool_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
 tool_final <- toolik[tool_vari]
 head(tool_final)
 
 all_dist1<-rbind(tool_final, hrf_final)
+head(all_dist1)
 all_dist<-rbind(all_dist1, knz_final)
-all_dist
+head(all_dist)
 
 #Take the average of slp, asp, and elev by plotID.
 attach(all_dist)
-all_dist_max<-aggregate(all_dist[c("elevatn","slpAspc","slpGrdn", "bldgs_dist", "roads_dist")],list(plotID=plotID, siteID=siteID, nlcdCls=nlcdCls),FUN=mean)
+all_dist_max<-aggregate(all_dist[c("elevatn","slpAspc","slpGrdn", "bldgs_dist", "roads_dist", "severe_dist")],list(plotID=plotID, siteID=siteID, nlcdCls=nlcdCls),FUN=mean)
 detach(all_dist)
 head(all_dist_max)
 
@@ -165,6 +187,8 @@ names(all_dist_max)
 names(all_rich_max)
 
 united  <-merge(all_dist_max, all_rich_max, by=c("plotID", "siteID"))
+head(united)
+
 head(united)
 ##########################################################################################
 #--------------------------------------------------------------------------------
@@ -215,6 +239,39 @@ hist(all_plant$ln.richness.p)
 all_bird$ln.richness.b<-log(all_bird$richness)
 head(all_bird)
 hist(all_bird$ln.richness.b)
+
+#united
+hist(united$bldgs_dist)
+united$ln.bldgs_dist<-log(united$bldgs_dist)
+hist(united$roads_dist)
+united$ln.roads_dist<-log(united$roads_dist)
+hist(united$severe_dist)
+head(united)
+
+#----------------------------------------------------------
+# Convert taxa file to wide format for modeling
+#----------------------------------------------------------
+# Wide format for taxa
+united_wide<-reshape(united, v.names="richness",    # the values you want to transpose to wide format
+                    idvar=c("siteID","plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn", "bldgs_dist", "roads_dist", "severe_dist","ln.bldgs_dist", "ln.roads_dist"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
+                    timevar="taxa",  # the name of the grouping variable.
+                    direction="wide") # the direction (can also be long)
+str(united_wide)
+head(united_wide)
+
+#transformations
+hist(united_wide$richness.bird)
+united_wide$ln.richness.bird<-log(united_wide$richness.bird)
+hist(united_wide$ln.richness.bird)
+
+hist(united_wide$richness.plant)
+united_wide$ln.richness.plant<-log(united_wide$richness.plant)
+hist(united_wide$ln.richness.plant)
+
+#Change all NA values for distance to 0
+united_wide[is.na(united_wide)] <- 0
+head(united_wide)
+head(united)
 save.image("neon_all_site_prep.RData")
 #################################################################################
 #Now you're ready for modeling. See script neon_all_site_analysis.

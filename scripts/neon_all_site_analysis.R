@@ -2,18 +2,12 @@
 # Author: Cameo Chilcutt
 # Date: 12 July 2018
 
-#Clear all existing data
+# Set file paths
 rm(list=ls())
+setwd("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data")
 
 #Close graphics devices
 graphics.off()
-
-# Set file paths
-google_drive <- 'G:\\My Drive\\NEON_LTER_2018\\data'
-setwd(file.path(google_drive, 'final_data\\neon')) # GD location
-# file path location for LTER disturbance and richness data by NEON plot
-data_path <- file.path(google_drive, 'final_data\\neon')
-fig_path <- file.path(google_drive, 'output')
 
 #Install/load packages
 for (package in c("lme4", "plyr", "dplyr", "purrr", "raster", "reshape2", "lubridate", "ggplot2")) {
@@ -33,6 +27,7 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
 load("neon_all_site_prep.RData")
 
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test
+library(psych)
 names(all_plant)
 pairs.panels(all_plant[c(3:9)])
 
@@ -73,8 +68,52 @@ anova(apm2,apm4)
 anova(apm3,apm4)
 
 #plots
-all_plant_plot<-ggplot(all_plant, aes(x =nlcdCls , y =richness)) + 
-  geom_point() +
+all_plant_plot<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) + 
+  geom_boxplot() +
   stat_smooth(method = "lm", col = "blue")
 all_plant_plot+labs(title="Richness",
                      x ="Land Cover Type", y = "plant richness")
+##################################################################################
+# include site as a function
+head(united_wide)
+
+#Correlation Tests this computes all pairwise correlations using Pearson's correlation test
+names(united_wide)
+pairs.panels(united_wide[c(2:13)])
+head(united_wide)
+
+# Models
+pms1<-lm(united_wide$richness.bird~united_wide$richness.plant+
+           united_wide$severe_dist*united_wide$siteID+
+           united_wide$ln.bldgs_dist*united_wide$siteID+
+           united_wide$ln.roads_dist*united_wide$siteID)
+summary(pms1)
+
+anova(pms1)
+#significant variables: plant richness, distance to severe disturbance, and roads.
+pms2<-lm(united_wide$richness.bird~united_wide$richness.plant+
+           united_wide$severe_dist+
+           united_wide$ln.bldgs_dist+
+           united_wide$siteID+
+           united_wide$ln.roads_dist)
+summary(pms2)
+#significant variables: roads
+anova(pms2)
+#significant variables: plant, severe, and roads
+anova(pms1,pms2) #p-value 0.4
+
+#plots
+all_plot<-ggplot(united, aes(x = taxa , y =richness, fill=siteID)) + 
+  geom_boxplot() +
+  stat_smooth(method = "lm", col = "blue")
+all_plot+labs(title="Richness",
+                    x ="Taxa", y = "Richness")
+
+
+sev_plot<-ggplot(united_wide, aes(x = siteID , y =severe_dist)) + 
+  geom_boxplot() +
+  stat_smooth(method = "lm", col = "blue") +
+  scale_y_log10()
+sev_plot+labs(title="Distance to severe disturbances per site",
+              x ="Richness", y = "Distance to Severe Disturbance")
+

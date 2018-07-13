@@ -197,6 +197,15 @@ anova(bm3, bm4) #Not Significant
 anova(bm3, bm5) #Not Significant
 anova(bm4, bm5) #Not Significant
 
+
+#plots
+bird.rich.road<-ggplot(arc_bird, aes(x = arc_bird$distance_m.roads, y =arc_bird$ln.richness)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+bird.rich.road+labs(title="Birds",
+               x ="Distance to Road", y = "Species Richness")
+
+
 # Remove outliers
 #roads
 plot(arc_bird$distance_m.roads, arc_bird$ln.richness)
@@ -234,6 +243,10 @@ names(bird.plant)
 bird.plant<-bird.plant[c(-(5:16))]
 names(bird.plant)
 bird.plant1<- bird.plant[c(-(6:17))]
+
+#bird v plant model
+bird.plant.model<-lm(bird.plant$ln.richness.b~bird.plant$ln.richness.p)
+summary(bird.plant.model)
 
 #plot
 bird.plant.rich<-ggplot(bird.plant1, aes(x = ln.richness.p, y =ln.richness.b)) + 
