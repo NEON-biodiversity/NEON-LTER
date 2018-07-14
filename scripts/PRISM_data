@@ -1,0 +1,48 @@
+#Libraries
+library(devtools) #needed to download prism from github
+library(reshape2) ##melting dataframes
+library(dplyr) #data wrangling
+library(raster) ##working with raster data
+library(sp) ##manipulationg spatial data
+library(ggplot2) #plotting
+library(ggmap) ##theme_nothing()
+library(rgdal)
+
+# Read NEON point data
+terrestrial <- readOGR(dsn="C:/Users/Kyra/Documents/Harvard/data/NEON_Spatial/All_NEON_TOS_Plots_V4", "All_Neon_TOS_Centroid_V4")
+knz <- terrestrial[terrestrial$siteNam=="Konza Prairie Biological Station",]
+knz_map <- spTransform(knz, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+hrf <- terrestrial[terrestrial$siteNam=="Harvard Forest",]
+hrf_map <- spTransform(hrf, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+##############################################################################
+
+# Install PRISM
+install_github(repo = "prism", username = "ropensci")
+library(prism) ##prism data access
+
+# Mean temp data
+options(prism.path = "~/prismtmp")
+get_prism_normals(type="tmean",resolution = "800m", annual = TRUE, keepZip=F)
+
+ls_prism_data(name=TRUE)
+
+# Temp data
+RS <- prism_stack(ls_prism_data()[63,1]) ##raster file of data
+proj4string(RS)<-CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs") ##assign projection info
+
+# Extract for NEON sites
+KNZ_tmean <- extract(RS, knz_map, method='bilinear')
+head(KNZ_tmean)
+HRF_tmean <- extract(RS, hrf_map, method='bilinear')
+head(HRF_tmean)
+
+# Ppt data
+RS2 <- prism_stack(ls_prism_data()[1,1]) ##raster file of data
+proj4string(RS2)<-CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs") ##assign projection info
+
+# Extract for NEON sites
+KNZ_ppt <- extract(RS2, knz_map, method='bilinear')
+head(KNZ_ppt)
+HRF_ppt <- extract(RS2, hrf_map, method='bilinear')
+head(HRF_ppt)
