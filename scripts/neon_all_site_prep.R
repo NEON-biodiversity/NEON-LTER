@@ -272,7 +272,114 @@ hist(united_wide$ln.richness.plant)
 united_wide[is.na(united_wide)] <- 0
 head(united_wide)
 head(united)
-save.image("neon_all_site_prep.RData")
 #################################################################################
+#Temperature & Precipitation Data
+#Libraries
+library(devtools) #needed to download prism from github
+library(reshape2) ##melting dataframes
+library(dplyr) #data wrangling
+library(raster) ##working with raster data
+library(sp) ##manipulationg spatial data
+library(ggplot2) #plotting
+library(ggmap) ##theme_nothing()
+library(rgdal)
+
+# Read NEON point data
+terrestrial <- readOGR("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_Neon_TOS_Centroid_V4.shp")
+knz <- terrestrial[terrestrial$siteNam=="Konza Prairie Biological Station",]
+knz_map <- spTransform(knz, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+hrf <- terrestrial[terrestrial$siteNam=="Harvard Forest",]
+hrf_map <- spTransform(hrf, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+arc <- terrestrial[terrestrial$siteNam=="Toolik Lake",]
+arc_map <- spTransform(arc, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+
+##############################################################################
+
+# Install PRISM
+install_github(repo = "prism", username = "ropensci")
+library(prism) ##prism data access
+
+# Mean temp data
+options(prism.path = "~/prismtmp")
+get_prism_normals(type="tmean",resolution = "800m", annual = TRUE, keepZip=F)
+
+ls_prism_data(name=TRUE)
+
+# Temp data
+RS <- prism_stack(ls_prism_data()[63,1]) ##raster file of data
+proj4string(RS)<-CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs") ##assign projection info
+
+# Extract for NEON sites
+KNZ_temp <- extract(RS, knz_map, method='bilinear')
+KNZ_temp
+knz_temp<-data.frame(KNZ_temp)
+names(knz_temp)[names(knz_temp)=="knz_temp"]<-"knz_tmean"
+HRF_temp <- extract(RS, hrf_map, method='bilinear')
+HRF_temp
+hrf_temp<-data.frame(HRF_temp)
+hrf_temp
+names(hrf_temp)[names(hrf_temp)=="hrf_temp"]<-"hrf_tmean"
+
+# Precipitation data
+RS2 <- prism_stack(ls_prism_data()[1,1]) ##raster file of data
+proj4string(RS2)<-CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs") ##assign projection info
+
+# Extract for NEON sites
+KNZ_ppt <- extract(RS2, knz_map, method='bilinear')
+KNZ_ppt
+knz_ppt<-data.frame(KNZ_ppt)
+names(knz_ppt)[names(knz_ppt)=="knz_ppt"]<-"knz_precip"
+HRF_ppt <- extract(RS2, hrf_map, method='bilinear')
+HRF_ppt
+hrf_ppt<-data.frame(HRF_ppt)
+names(hrf_ppt)[names(hrf_ppt)=="hrf_ppt"]<-"hrf_precip"
+
+#Toolik Temp Data
+library(rgdal)
+arc_temp<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\ak_tempmean\\tmeananl\\hdr.adf")
+plot(arc_temp)
+plot(arc_map, add=T)
+arc_temp_spdf = SpatialPointsDataFrame(arc_map@data[,20:19], proj4string=arc_temp@crs,arc_map@data)
+arc_temp_spdf
+
+tool_temp<- extract(arc_temp, arc_map, tool_temp=TRUE, method='bilinear')
+plot(tool_temp)
+tool_temp_avg<-(tool_temp/100)
+tool_temp_avg
+
+#transform to dataframe
+class(tool_temp_avg)
+tool_temp_avg<-data.frame(tool_temp_avg)
+head(tool_temp_avg)
+names(tool_temp_avg)[names(tool_temp_avg)=="tool_temp_avg"]<-"arc_tmean"
+head(tool_temp_avg)
+
+#Toolik Precipitaiton Data
+arc_ppt<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\ak_precipmean\\pptanl\\hdr.adf")
+plot(arc_ppt)
+plot(arc_map, add=T)
+arc_ppt_spdf = SpatialPointsDataFrame(arc_map@data[,20:19], proj4string=arc_ppt@crs,arc_map@data)
+arc_ppt_spdf
+tool_ppt<- extract(arc_ppt, arc_map, tool_ppt=TRUE, method='bilinear')
+plot(tool_ppt)
+tool_ppt #mean values of precipitation in meters per neon plot in Toolik
+
+
+#transform to dataframe
+class(tool_ppt)
+tool_ppt<-data.frame(tool_ppt)
+class(tool_ppt)
+names(tool_ppt)[names(tool_ppt)=="arc_ppt"]<-"arc_precip"
+head(tool_ppt)
+
+
+#combine toolik data
+tpt<-merge(tool_ppt, tool_temp_avg, by=0)
+head(tpt)
+
+
+
+##################################################################################
+save.image("neon_all_site_prep.RData")
 #Now you're ready for modeling. See script neon_all_site_analysis.
 

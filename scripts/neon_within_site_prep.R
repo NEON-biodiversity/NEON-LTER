@@ -156,8 +156,7 @@ head(terrestrial)
 #To subset the data specifically to your site. You must use the exact name as it is written in the data. To look this up, use the following function to list all of the names of the field sites.
 unique(terrestrial$siteNam)
 
-#Figure out why the richness HARV & TOOL subset didn't work before running the elevation extraction.
-#arc<-terrestrial[terrestrial$siteNam=="Toolik Lake","Harvard Forest",]
+#subset toolik
 arc<-terrestrial[terrestrial$siteNam=="Toolik Lake",]
 summary(arc)
 names(arc)

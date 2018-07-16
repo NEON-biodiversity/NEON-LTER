@@ -73,6 +73,77 @@ all_plant_plot<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) +
   stat_smooth(method = "lm", col = "blue")
 all_plant_plot+labs(title="Richness",
                      x ="Land Cover Type", y = "plant richness")
+
+
+#Birds
+abm1<-lm(all_bird$richness~all_bird$bldgs_dist+
+           all_bird$roads_dist+
+           all_bird$nlcdCls+
+           all_bird$elevatn)
+summary(abm1)
+#significant variables: deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+
+#Reduced Model - remove bldgs and roads
+abm2<-lm(all_bird$richness~
+           all_bird$nlcdCls+
+           all_bird$elevatn)
+summary(abm2)
+#significant variables: deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+
+abm3<- lm(all_bird$richness~all_bird$nlcdCls)
+summary(abm3)
+#significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+
+anova(abm1, abm2)
+anova(abm1, abm3)
+anova(abm2, abm3)
+
+#All Data
+head(united)
+hist(united$richness)
+united$ln.richness<-log(united$richness)
+hist(united$ln.richness)
+
+arm<-lm(united$ln.richness~
+          united$nlcdCls+
+          united$siteID+
+          united$bldgs_dist+
+          united$roads_dist+
+          united$severe_dist)
+summary(arm)
+
+#Reduced Model - Remove bldgs and roads
+arm1<-lm(united$ln.richness~
+          united$nlcdCls+
+          united$siteID+
+          united$severe_dist)
+summary(arm1)
+
+#Reduced Model - Remove siteID
+arm2<-lm(united$ln.richness~
+           united$nlcdCls+
+           united$severe_dist)
+summary(arm2)
+
+#Reduced Model - Remove severe_dist
+arm3<-lm(united$ln.richness~
+           united$nlcdCls)
+summary(arm3)
+
+anova(arm, arm1)
+anova(arm, arm2)
+anova(arm, arm3)
+anova(arm1, arm2)
+anova(arm1, arm3)
+anova(arm2, arm3)
+
+#plots
+rich.land<-ggplot(united, aes(x = nlcdCls , y =ln.richness, fill=siteID)) + 
+  geom_boxplot() +
+  stat_smooth(method = "lm", col = "blue")
+rich.land+labs(title="Richness",
+              x ="Land Cover Type", y = "Richness")
+
 ##################################################################################
 # include site as a function
 head(united_wide)
@@ -116,4 +187,11 @@ sev_plot<-ggplot(united_wide, aes(x = siteID , y =severe_dist)) +
   scale_y_log10()
 sev_plot+labs(title="Distance to severe disturbances per site",
               x ="Richness", y = "Distance to Severe Disturbance")
+
+bird_richness<-ggplot(united_wide, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
+  geom_boxplot() +
+  stat_smooth(method = "lm", col = "blue") +
+  scale_y_log10()
+bird_richness+labs(title="Richness",
+              x ="Land Cover Type", y = "Bird Richness")
 
