@@ -29,166 +29,260 @@ load("neon_all_site_prep.RData")
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test
 library(psych)
 names(all_plant)
-pairs.panels(all_plant[c(3:9)])
+pairs.panels(all_plant[c(3:10,14:15)])
 
 # This is the first linear model. First is the plant species richness data ~ all your predictor variables.
 apm1<-lm(all_plant$richness~all_plant$bldgs_dist+
            all_plant$roads_dist+
            all_plant$nlcdCls+
-           all_plant$elevatn)
+           all_plant$elevatn+
+           all_plant$precipitation+
+           all_plant$temperature)
 summary(apm1)
-#significant variables: deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: roads, herbaceous, and temperature
 
-#Reduced Model 2 - removed bldgs
+#Reduced Model 2 - removed bldgs and elevatn
 apm2<-lm(all_plant$richness~
            all_plant$roads_dist+
            all_plant$nlcdCls+
-           all_plant$elevatn)
+           all_plant$precipitation+
+           all_plant$temperature)
 summary(apm2)
-#significant variables: deciduousForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: roads, herbaceous, and temperature
 
-#Reduced Model 3 - removed roads
+#Reduced Model 3 - removed precipitation
 apm3<-lm(all_plant$richness~
+           all_plant$roads_dist+
            all_plant$nlcdCls+
-           all_plant$elevatn)
+           all_plant$temperature)
 summary(apm3)
-#significant variables: deciduousForest, grasslandHerbaceous, and woodyWetlands
+#significant variables: intercept, roads, sedgeHerbaceous, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, woodyWetlands, and temperature
 
-#Reduced Model 4 - removed elevation
+#Reduced Model 4 - model individual significant variables
 apm4<-lm(all_plant$richness~
-           all_plant$nlcdCls)
+           all_plant$roads_dist)
 summary(apm4)
-#significant variables: intercept, deciduousForest, evergreenForest grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: intercept
 
-anova(apm1,apm2)
-anova(apm1,apm3)
-anova(apm1,apm4)
-anova(apm2,apm3)
-anova(apm2,apm4)
-anova(apm3,apm4)
+#Reduced Model 5 - model individual significant variables
+apm5<-lm(all_plant$richness~
+           all_plant$nlcdCls)
+summary(apm5)
+#significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+
+#Reduced Model 6 - model individual significant variables
+apm6<-lm(all_plant$richness~
+           all_plant$temperature)
+summary(apm6)
+#significant variables: intercept and temperature
+anova(apm1,apm2)#Not Significant
+anova(apm1,apm3)#Not Significant
+anova(apm1,apm4)#**Significant**
+anova(apm1,apm5)#**Significant**
+anova(apm1,apm6)#**Significant**
+anova(apm2,apm3)#Not Significant
+anova(apm2,apm4)#**Significant**
+anova(apm2,apm5)#**Significant**
+anova(apm2,apm6)#**Significant**
+anova(apm3,apm4)#**Significant**
+anova(apm3,apm5)#**Significant**
+anova(apm3,apm6)#**Significant**
+anova(apm4,apm5)#**Significant**
+anova(apm5,apm6)#Not Significant
 
 #plots
-all_plant_plot<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) + 
+plant_landcover<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue")
-all_plant_plot+labs(title="Richness",
+plant_landcover+labs(title="Richness",
                      x ="Land Cover Type", y = "plant richness")
 
+plant_temperature<-ggplot(all_plant, aes(x =temperature , y =richness, fill=siteID)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+plant_temperature+labs(title="Richness",
+                     x ="Temperature", y = "plant richness")
 
+##################################################################################
 #Birds
 abm1<-lm(all_bird$richness~all_bird$bldgs_dist+
            all_bird$roads_dist+
            all_bird$nlcdCls+
-           all_bird$elevatn)
+           all_bird$elevatn+
+           all_bird$precipitation+
+           all_bird$temperature)
 summary(abm1)
-#significant variables: deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: deciduousForest, evergreenForest, mixedForest, and woodyWetlands
 
 #Reduced Model - remove bldgs and roads
 abm2<-lm(all_bird$richness~
            all_bird$nlcdCls+
-           all_bird$elevatn)
+           all_bird$elevatn+
+           all_bird$precipitation+
+           all_bird$temperature)
 summary(abm2)
-#significant variables: deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: deciduousForest, evergreenForest, mixedForest, and woodyWetlands
 
-abm3<- lm(all_bird$richness~all_bird$nlcdCls)
+#Reduced Model - remove elevatn
+abm3<- lm(all_bird$richness~
+            all_bird$nlcdCls+
+            all_bird$precipitation+
+            all_bird$temperature)
 summary(abm3)
 #significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
 
-anova(abm1, abm2)
-anova(abm1, abm3)
-anova(abm2, abm3)
+#Reduced Model - model only significant variable
+abm4<- lm(all_bird$richness~
+            all_bird$nlcdCls)
+summary(abm4)
+#significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+
+anova(abm1, abm2)#Not Significant
+anova(abm1, abm3)#Not Significant
+anova(abm1, abm4)#Not Significant
+anova(abm2, abm3)#Not Significant
+anova(abm3, abm4)#Not Significant
+
+##################################################################################
+#Correlation Tests
+names(kth)
+pairs.panels(kth[c(3:9,16:17)])
 
 #All Data
-head(united)
-hist(united$richness)
-united$ln.richness<-log(united$richness)
-hist(united$ln.richness)
+hist(kth_final$richness)
+kth_final$ln.richness<-log(kth_final$richness)
+hist(kth_final$ln.richness)
 
-arm<-lm(united$ln.richness~
-          united$nlcdCls+
-          united$siteID+
-          united$bldgs_dist+
-          united$roads_dist+
-          united$severe_dist)
+#Complex Model
+head(kth_final)
+arm<-lm(kth_final$ln.richness~
+          kth_final$nlcdCls+
+          kth_final$siteID+
+          kth_final$bldgs_dist+
+          kth_final$roads_dist+
+          kth_final$severe_dist+
+          kth_final$temperature+
+          kth_final$precipitation)
 summary(arm)
+#Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove bldgs and roads
-arm1<-lm(united$ln.richness~
-          united$nlcdCls+
-          united$siteID+
-          united$severe_dist)
+arm1<-lm(kth_final$ln.richness~
+           kth_final$nlcdCls+
+           kth_final$siteID+
+           kth_final$severe_dist+
+           kth_final$temperature+
+           kth_final$precipitation)
 summary(arm1)
+#Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove siteID
-arm2<-lm(united$ln.richness~
-           united$nlcdCls+
-           united$severe_dist)
+arm2<-lm(kth_final$ln.richness~
+           kth_final$nlcdCls+
+           kth_final$severe_dist+
+           kth_final$temperature+
+           kth_final$precipitation)
 summary(arm2)
+#Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove severe_dist
-arm3<-lm(united$ln.richness~
-           united$nlcdCls)
+arm3<-lm(kth_final$ln.richness~
+           kth_final$nlcdCls+
+           kth_final$temperature+
+           kth_final$precipitation)
 summary(arm3)
+#Significant variables: sedgeHerbaceous
 
-anova(arm, arm1)
-anova(arm, arm2)
-anova(arm, arm3)
-anova(arm1, arm2)
-anova(arm1, arm3)
-anova(arm2, arm3)
+#Reduced Model - Remove precipitation
+arm4<-lm(kth_final$ln.richness~
+           kth_final$nlcdCls+
+           kth_final$temperature)
+summary(arm4)
+#Significant variables: intercept and sedgeHerbaceous
+
+#Reduced Model - remove temperature
+arm5<-lm(kth_final$ln.richness~
+           kth_final$nlcdCls)
+summary(arm5)
+#Significant variables: intercept, sedgeHerbaceous, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+
+#Reduced Model - remove ncldCls
+arm6<-lm(kth_final$ln.richness~
+           kth_final$temperature)
+summary(arm6)
+#Significant variables: intercept and temperature
+
+anova(arm, arm1)#Not Significant
+anova(arm, arm2)#Not Significant
+anova(arm, arm3)#Not Significant
+anova(arm, arm4)#Not Significant
+anova(arm, arm5)#Not Significant
+anova(arm, arm6)#Not Significant
+anova(arm1, arm2)#Not Significant
+anova(arm1, arm3)#Not Significant
+anova(arm1, arm4)#Not Significant
+anova(arm1, arm5)#Not Significant
+anova(arm1, arm6)#Not Significant
+anova(arm2, arm3)#Not Significant
+anova(arm2, arm4)#Not Significant
+anova(arm2, arm5)#Not Significant
+anova(arm2, arm6)#Not Significant
+anova(arm3, arm4)#Not Significant
+anova(arm3, arm5)#Not Significant
+anova(arm3, arm6)#Not Significant
+anova(arm4, arm5)#Not Significant
+anova(arm4, arm6)#**Significant**
+anova(arm5, arm6)#Not Significant
 
 #plots
-rich.land<-ggplot(united, aes(x = nlcdCls , y =ln.richness, fill=siteID)) + 
+rich.land<-ggplot(kth_final, aes(x = nlcdCls , y =ln.richness, fill=siteID)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue")
 rich.land+labs(title="Richness",
               x ="Land Cover Type", y = "Richness")
 
+rich.temp<-ggplot(kth_final, aes(x = temperature , y =ln.richness, fill=siteID)) + geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+rich.temp+labs(title="Richness",
+               x ="Temperature", y = "Richness")
 ##################################################################################
 # include site as a function
-head(united_wide)
+head(kth)
 
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test
-names(united_wide)
-pairs.panels(united_wide[c(2:13)])
-head(united_wide)
+names(kth)
+pairs.panels(kth[c(2:9,14:17)])
+head(kth)
 
 # Models
-pms1<-lm(united_wide$richness.bird~united_wide$richness.plant+
-           united_wide$severe_dist*united_wide$siteID+
-           united_wide$ln.bldgs_dist*united_wide$siteID+
-           united_wide$ln.roads_dist*united_wide$siteID)
+pms1<-lm(kth$richness.bird~kth$richness.plant+
+           kth$severe_dist*kth$siteID+
+           kth$ln.bldgs_dist*kth$siteID+
+           kth$ln.roads_dist*kth$siteID+
+           kth$temperature*kth$siteID+
+           kth$precipitation*kth$siteID)
 summary(pms1)
+#Significant Variables: intercept, siteIDKONZ, temperature, siteIDKONZ*temp
 
-anova(pms1)
-#significant variables: plant richness, distance to severe disturbance, and roads.
-pms2<-lm(united_wide$richness.bird~united_wide$richness.plant+
-           united_wide$severe_dist+
-           united_wide$ln.bldgs_dist+
-           united_wide$siteID+
-           united_wide$ln.roads_dist)
+#Reduced model - remove precipitation and bldgs
+pms2<-lm(kth$richness.bird~kth$richness.plant+
+           kth$severe_dist+
+           kth$siteID+
+           kth$ln.roads_dist+
+           kth$temperature)
 summary(pms2)
-#significant variables: roads
-anova(pms2)
-#significant variables: plant, severe, and roads
-anova(pms1,pms2) #p-value 0.4
+#significant variables: None
 
-#plots
-all_plot<-ggplot(united, aes(x = taxa , y =richness, fill=siteID)) + 
-  geom_boxplot() +
-  stat_smooth(method = "lm", col = "blue")
-all_plot+labs(title="Richness",
-                    x ="Taxa", y = "Richness")
+anova(pms1,pms2) #p-value 0.16
 
-
-sev_plot<-ggplot(united_wide, aes(x = siteID , y =severe_dist)) + 
+sev_plot<-ggplot(kth, aes(x = siteID , y =severe_dist)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue") +
   scale_y_log10()
 sev_plot+labs(title="Distance to severe disturbances per site",
               x ="Richness", y = "Distance to Severe Disturbance")
 
-bird_richness<-ggplot(united_wide, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
+bird_richness<-ggplot(kth, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue") +
   scale_y_log10()
