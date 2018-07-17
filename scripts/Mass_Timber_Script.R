@@ -43,5 +43,6 @@ cut_data
 cut_crop <- crop(cut_data, extent(hrf_map))
 plot(cut_crop)
 points(hrf_map, col="red")
+
 # Export cutting map
 writeOGR(obj=cut_crop, dsn= "C:/Users/Kyra/Documents/Harvard/data/HF/LTER", layer="hrf_cutting_map", driver="ESRI Shapefile") # this is in geographical projection
