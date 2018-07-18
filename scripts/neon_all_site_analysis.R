@@ -66,9 +66,9 @@ summary(apm4)
 
 #Reduced Model 5 - model individual significant variables
 apm5<-lm(all_plant$richness~
-           all_plant$nlcdCls)
+           all_plant$nlcdCls+ all_plant$siteID)
 summary(apm5)
-#significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: intercept, deciduousForest, evergreenForest,  mixedForest, and woodyWetlands
 
 #Reduced Model 6 - model individual significant variables
 apm6<-lm(all_plant$richness~
@@ -92,13 +92,13 @@ anova(apm5,apm6)#Not Significant
 
 #plots
 plant_landcover<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) + 
-  geom_boxplot() +
+  geom_point() +
   stat_smooth(method = "lm", col = "blue")
 plant_landcover+labs(title="Richness",
                      x ="Land Cover Type", y = "plant richness")
 
 plant_temperature<-ggplot(all_plant, aes(x =temperature , y =richness, fill=siteID)) + 
-  geom_point() +
+  geom_point() + scale_y_log10()+
   stat_smooth(method = "lm", col = "blue")
 plant_temperature+labs(title="Richness",
                      x ="Temperature", y = "plant richness")
@@ -133,7 +133,7 @@ summary(abm3)
 
 #Reduced Model - model only significant variable
 abm4<- lm(all_bird$richness~
-            all_bird$nlcdCls)
+            all_bird$nlcdCls+all_bird$siteID)
 summary(abm4)
 #significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
 
@@ -273,7 +273,13 @@ pms2<-lm(kth$richness.bird~kth$richness.plant+
 summary(pms2)
 #significant variables: None
 
+#Reduced model - only plants and roads
+pms3<-lm(kth$richness.bird~kth$richness.plant+
+           kth$ln.roads_dist)
+summary(pms3)
+
 anova(pms1,pms2) #p-value 0.16
+anova(pms1, pms3)
 
 sev_plot<-ggplot(kth, aes(x = siteID , y =severe_dist)) + 
   geom_boxplot() +
@@ -284,8 +290,7 @@ sev_plot+labs(title="Distance to severe disturbances per site",
 
 bird_richness<-ggplot(kth, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
   geom_boxplot() +
-  stat_smooth(method = "lm", col = "blue") +
-  scale_y_log10()
+  stat_smooth(method = "lm", col = "blue") 
 bird_richness+labs(title="Richness",
               x ="Land Cover Type", y = "Bird Richness")
 

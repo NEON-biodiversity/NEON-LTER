@@ -1,7 +1,7 @@
 # Title: Modeling
 # Author: Cameo Chilcutt
 # Date: 10 July 2018
-
+rm=(list=ls())
 # Set file paths
 google_drive <- 'G:\\My Drive\\NEON_LTER_2018\\data'
 setwd(file.path(google_drive, 'final_data\\neon')) # GD location
@@ -243,7 +243,7 @@ names(bird.plant)
 bird.plant<-bird.plant[c(-(5:16))]
 names(bird.plant)
 bird.plant1<- bird.plant[c(-(6:17))]
-
+names(bird.plant1)
 #bird v plant model
 bird.plant.model<-lm(bird.plant$ln.richness.b~bird.plant$ln.richness.p)
 summary(bird.plant.model)
@@ -267,3 +267,6 @@ summary(bpm2)
 
 anova(bpm1, bpm2)
 
+(bird.plant$rich ,plantrich))
+
+cor.test(bird.plant1$ln.richness.b,bird.plant1$ln.richness.p)
