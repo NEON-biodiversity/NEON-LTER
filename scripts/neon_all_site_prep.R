@@ -4,19 +4,27 @@
 
 # Start with a clear workspace and set working directory to google drive -> NEON_LTER_2018 folder -> data -> raw_data
 rm(list=ls())
-setwd("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data")
+setwd("G:\\My Drive\\NEON_LTER_2018\\data\\final_data")
 
 #install these packages and load the libraries
 library(rgdal)
 library(rgeos)
 library(raster)
+library(devtools)
+library(reshape2)
+library(dplyr) 
+library(sp) 
+library(ggplot2)
+library(ggmap) 
 
-#load these data 
-load("NEON_LTER.RData")
-load("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\neon_within_site_prep.RData")
-names(knz.combined.distances)
-names(hrf.combined.distances)
-names(toolik)
+#Read in these csv files to work with distance calculations
+knz_dist<-read.csv(".\\neon\\disturbance\\knz_dist.csv")
+hrf_dist<-read.csv(".\\neon\\disturbance\\hrf_dist.csv")
+tool_dist<-read.csv(".\\neon\\disturbance\\arc_dist.csv")
+
+names(knz_dist)
+names(hrf_dist)
+names(tool_dist)
 
 #organismal data
 mammals <- read.csv(file.path(data_path,"./richness/mammal_richness_cumulative_plot.csv"), stringsAsFactors = FALSE)
@@ -190,10 +198,10 @@ united  <-merge(all_dist_max, all_rich_max, by=c("plotID", "siteID"))
 head(united)
 
 head(united)
-##########################################################################################
-#--------------------------------------------------------------------------------
+###############################################################################
+#-------------------------------------------------------------------------------
 #Separate birds and plants richness
-#--------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #birds
 all_bird<-united[united$taxa=="bird",]
 head(all_bird)
@@ -201,7 +209,7 @@ head(all_bird)
 #plants
 all_plant<-united[united$taxa=="plant",]
 head(all_plant)
-#################################################################################
+################################################################################
 # take a look at the relationship between plant richness and elevation
 pp <- ggplot(all_plant, aes(x=elevatn, y=richness)) +
   geom_point(aes()) 
@@ -221,13 +229,13 @@ br
 brl <- ggplot(all_bird, aes(x=elevatn, y=richness)) +
   geom_point(aes()) + scale_y_log10()  
 brl
-#################################################################################
+################################################################################
 #Histograms
 
 hist(all_plant$richness)
 hist(all_bird$richness)
 
-#################################################################################
+################################################################################
 #log transformations
 
 #plant
@@ -272,18 +280,8 @@ hist(united_wide$ln.richness.plant)
 united_wide[is.na(united_wide)] <- 0
 head(united_wide)
 head(united)
-#################################################################################
+################################################################################
 #Temperature & Precipitation Data
-#Libraries
-library(devtools) #needed to download prism from github
-library(reshape2) ##melting dataframes
-library(dplyr) #data wrangling
-library(raster) ##working with raster data
-library(sp) ##manipulationg spatial data
-library(ggplot2) #plotting
-library(ggmap) ##theme_nothing()
-library(rgdal)
-
 # Read NEON point data
 terrestrial <- readOGR("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_Neon_TOS_Centroid_V4.shp")
 knz <- terrestrial[terrestrial$siteNam=="Konza Prairie Biological Station",]
@@ -423,10 +421,10 @@ head(ttp1)
 #combine with united to have plant and bird richness separate
 tpb<-merge(united, ttp, by="plotID")
 head(tpb)
-##################################################################################
-#--------------------------------------------------------------------------------
+################################################################################
+#-------------------------------------------------------------------------------
 #Separate birds and plants richness
-#--------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #birds
 tb<-tpb[tpb$taxa=="bird",]
 head(tb)
@@ -434,7 +432,7 @@ head(tb)
 #plants
 tp<-tpb[tpb$taxa=="plant",]
 head(tp)
-##################################################################################
+################################################################################
 #Check again for duplicates
 ttp1[duplicated(ttp1$plotID),]
 
@@ -490,10 +488,10 @@ head(kttp)
 #combine with united to have plant and bird richness separate
 kpb<-merge(united, ktp, by="plotID")
 head(kpb)
-##################################################################################
-#--------------------------------------------------------------------------------
+###############################################################################
+#------------------------------------------------------------------------------
 #Separate birds and plants richness
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 #birds
 kb<-kpb[kpb$taxa=="bird",]
 head(kb)
@@ -501,7 +499,7 @@ head(kb)
 #plants
 kp<-kpb[kpb$taxa=="plant",]
 head(kp)
-##################################################################################
+###############################################################################
 #Check again for duplicates
 kttp[duplicated(kttp$plotID),]
 
@@ -558,10 +556,10 @@ head(http)
 #combine with united to have plant and bird richness separate
 hpb<-merge(united, htp, by="plotID")
 head(hpb)
-##################################################################################
-#--------------------------------------------------------------------------------
+################################################################################
+#------------------------------------------------------------------------------
 #Separate birds and plants richness
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 #birds
 hb<-hpb[hpb$taxa=="bird",]
 head(hb)
@@ -569,11 +567,9 @@ head(hb)
 #plants
 hp<-hpb[hpb$taxa=="plant",]
 head(hp)
-##################################################################################
-
+################################################################################
 #Check again for duplicates
 http[duplicated(http$plotID),]
-
 
 #Combine all values to one complete data frame for modeling.
 names(kttp)
@@ -591,9 +587,9 @@ kt
 kth<-rbind(kt,http)
 names(kth)
 
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 #Combine data for separate plant and bird
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 names(tb)
 names(tb)[names(tb)=="tool_ppt"]<-"precipitation"
 names(tb)[names(tb)=="tool_tmean"]<-"temperature"
@@ -628,7 +624,7 @@ all_plant1<-rbind(tp, kp)
 head(all_plant1)
 all_plant<-rbind(all_plant1, hp)
 head(all_plant)
-##################################################################################
+################################################################################
 #Combined complete data frame.
 names(tpb)
 names(tpb)[names(tpb)=="tool_ppt"]<-"precipitation"

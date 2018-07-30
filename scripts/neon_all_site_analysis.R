@@ -75,6 +75,7 @@ apm6<-lm(all_plant$richness~
            all_plant$temperature)
 summary(apm6)
 #significant variables: intercept and temperature
+
 anova(apm1,apm2)#Not Significant
 anova(apm1,apm3)#Not Significant
 anova(apm1,apm4)#**Significant**
@@ -91,19 +92,19 @@ anova(apm4,apm5)#**Significant**
 anova(apm5,apm6)#Not Significant
 
 #plots
-plant_landcover<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) + 
-  geom_point() +
+plant_landcover<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) +
+  geom_boxplot() +
   stat_smooth(method = "lm", col = "blue")
 plant_landcover+labs(title="Richness",
                      x ="Land Cover Type", y = "plant richness")
 
 plant_temperature<-ggplot(all_plant, aes(x =temperature , y =richness, fill=siteID)) + 
-  geom_point() + scale_y_log10()+
+  geom_point() +
   stat_smooth(method = "lm", col = "blue")
 plant_temperature+labs(title="Richness",
                      x ="Temperature", y = "plant richness")
 
-##################################################################################
+###############################################################################
 #Birds
 abm1<-lm(all_bird$richness~all_bird$bldgs_dist+
            all_bird$roads_dist+
@@ -112,6 +113,7 @@ abm1<-lm(all_bird$richness~all_bird$bldgs_dist+
            all_bird$precipitation+
            all_bird$temperature)
 summary(abm1)
+
 #significant variables: deciduousForest, evergreenForest, mixedForest, and woodyWetlands
 
 #Reduced Model - remove bldgs and roads
@@ -143,7 +145,7 @@ anova(abm1, abm4)#Not Significant
 anova(abm2, abm3)#Not Significant
 anova(abm3, abm4)#Not Significant
 
-##################################################################################
+################################################################################
 #Correlation Tests
 names(kth)
 pairs.panels(kth[c(3:9,16:17)])
@@ -245,7 +247,7 @@ rich.temp<-ggplot(kth_final, aes(x = temperature , y =ln.richness, fill=siteID))
   stat_smooth(method = "lm", col = "blue")
 rich.temp+labs(title="Richness",
                x ="Temperature", y = "Richness")
-##################################################################################
+################################################################################
 # include site as a function
 head(kth)
 
@@ -281,16 +283,29 @@ summary(pms3)
 anova(pms1,pms2) #p-value 0.16
 anova(pms1, pms3)
 
+#distance to severe disturbances by site
 sev_plot<-ggplot(kth, aes(x = siteID , y =severe_dist)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue") +
   scale_y_log10()
 sev_plot+labs(title="Distance to severe disturbances per site",
               x ="Richness", y = "Distance to Severe Disturbance")
+#Toolik Lake has the most distance between the severe disturbance and the NEON plots. Whereas Harvard Forest and Konza Prairie have severe disturbances occuring very close or on top of the NEON plots.
 
+#landcover and bird richness
 bird_richness<-ggplot(kth, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue") 
 bird_richness+labs(title="Richness",
               x ="Land Cover Type", y = "Bird Richness")
 
+#bird richness to plant richness by site
+richness.bp<-ggplot(kth, aes(x = richness.plant , y =richness.bird)) + geom_point() + scale_x_log10()+
+  stat_smooth(method = "lm", col = "red") 
+richness.bp+labs(title="Richness",
+                   x ="Land Cover Type", y = "Bird Richness")
+
+#Correlation test
+cor.test(kth$richness.bird,kth$richness.plant)
+
+#Across sites birds have a positive correlation with plants.Although it is a weak correlation with a value or 0.189. 

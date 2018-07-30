@@ -13,7 +13,7 @@ library(rgeos)
 library(raster)
 # Import terrestrial data shape files from Google Drive
 terrestrial <- readOGR(".\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_NEON_TOS_Centroid_V4.shp")
-plot(terrestrial, col=cm.colors(5), alpha=1, legend=F, main="Terrestrial Data")
+plot(terrestrial, legend=F, main="Terrestrial Data")
 
 #To subset the data specifically to your site. You must use the exact name as it is written in the data. To look this up, use the following function to list all of the names of the field sites.
 #Toolik
@@ -39,7 +39,7 @@ head(hrf_UTM)
 #Konza
 knz_UTM<-spTransform(knz, CRS("+proj=utm +zone=14 ellps=WGS84"))
 head(knz_UTM)
-######################################################################################
+###############################################################################
 #Next we need to import and reproject all of the relevant disturbance shape files. After importing, always plot to be sure you have the appropriate shapes. Also, check if the files are in UTMs. If not, reproject the same way we did for the NEON terrestrial data. We need UTMs to measure distance in meters.
 #ARC data
 #Camp Buildings 2013 Data
@@ -49,14 +49,14 @@ summary(cb13)
 
 #Roads & Trails Data
 rt<- readOGR(".\\arc\\gis_data\\roads_trails$data", "transport_100423")
-plot(rt, col=cm.colors(10), alpha=1, legend=F, main="Road_Trails")
+plot(rt, legend=F, main="Road_Trails")
 summary(rt)
 rt<-spTransform(rt, CRS("+proj=utm +zone=6 ellps=WGS84"))
 summary(rt)
 
 #Pipeline Data
 pipeline<- readOGR(".\\arc\\gis_data\\taps$data", "pipeline_proj")
-plot(pipeline, col=heat.colors(5), alpha=1, legend=F, main="Pipeline")
+plot(pipeline, legend=F, main="Pipeline")
 summary(pipeline)
 pipeline<-spTransform(pipeline, CRS("+proj=utm +zone=6 ellps=WGS84"))
 summary(pipeline)
@@ -81,22 +81,22 @@ summary(toolwater)
 # Harvard Forest - HRF data
 
 #Massachusetts Timber Harvesting Data
-cutting <- readOGR(".\\hrf\\HF_Archives_Data\\Mass_Timber\\hf080-03-gis", "all_cutting_plans_v4")
+cutting <- readOGR(".\\hrf\\LTER\\Mass_Timber\\hf080-03-gis", "all_cutting_plans_v4")
 cut_data <- spTransform(cutting, CRS("+proj=utm +zone=19 ellps=WGS84"))
 plot(cut_data)
 
 ## 1830 map data
 #Buildings
-building_data <- readOGR(".\\hrf\\HF_Archives_Data\\Map_1830", "1830buildings")
+building_data <- readOGR(".\\hrf\\LTER\\Map_1830", "1830buildings")
 buildings <- spTransform(building_data, CRS("+proj=utm +zone=19 ellps=WGS84"))
 plot(buildings)
 
 #Roads
-roads_data <- readOGR(".\\hrf\\HF_Archives_Data\\Map_1830", "1830roads")
+roads_data <- readOGR(".\\hrf\\LTER\\Map_1830", "1830roads")
 hrf_roads <- spTransform(roads_data, CRS("+proj=utm +zone=19 ellps=WGS84"))
 plot(hrf_roads)
 
-#################################################################################
+################################################################################
 #KNZ data
 #Roads
 
@@ -243,17 +243,17 @@ plot(burn)
 
 #Roads
 knz_roads <- readOGR(".\\knz\\LTER\\GIS10", "gis100")
-map_roads <- spTransform(roads, CRS("+proj=utm +zone=14 ellps=WGS84"))
+map_roads <- spTransform(knz_roads, CRS("+proj=utm +zone=14 ellps=WGS84"))
 
 #Nature trails 
 knz_trails <- readOGR(".\\knz\\LTER\\GIS11", "GIS110")
-map_trails <- spTransform(trails, CRS("+proj=utm +zone=14 ellps=WGS84"))
+map_trails <- spTransform(knz_trails, CRS("+proj=utm +zone=14 ellps=WGS84"))
 
 #Permanent structures
 structure_data <- readOGR(".\\knz\\LTER\\GIS19", "GIS190")
 structures <- spTransform(structure_data, CRS("+proj=utm +zone=14 ellps=WGS84"))
 
-#################################################################################
+################################################################################
 #Now we are going to measure distance between NEON data collection points and the Anaktuvuk fire.
 arc_burn_dist<- apply(gDistance(arc_UTM, anaktuvuk,byid=TRUE),2,min)
 arc_burn_dist<- data.frame(arc_burn_dist)
@@ -271,7 +271,6 @@ head(arc_burn_dist)
 head(arc1)
 
 #Now let's calculate the distance for all of the disturbances in relation to the NEON collection sites.
-
 #Camp Buildings
 arc_bldgs_dist<- apply(gDistance(arc_UTM, cb13,byid=TRUE),2,min)
 arc_bldgs_dist<- data.frame(arc_bldgs_dist)
@@ -290,7 +289,7 @@ head(arc2)
 
 #Merge both arc1 and arc2 dataframes to include all of the data for both burn_dist and bldgs_dist.
 combined.dist<-merge(arc1, arc2, by="plotID", all=T)
-write.csv(combined.dist,file="combined_distance_data.csv", row.names=FALSE)
+write.csv(combined.dist,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\arc_dist.csv", row.names=FALSE)
 
 #Pipeline
 arc_pipe_dist<- apply(gDistance(arc_UTM, pipeline,byid=TRUE),2,min)
@@ -308,7 +307,7 @@ head(arc3)
 
 #Merge all data frames together
 combined.dist1<-merge(combined.dist, arc3, by="plotID", all=T)
-write.csv(combined.dist1,file="combined_distance_data.csv", row.names=FALSE)
+write.csv(combined.dist1,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\arc_dist.csv", row.names=FALSE)
 
 #Thermokarst
 arc_thermo_dist<- apply(gDistance(arc_UTM, thermokarst,byid=TRUE),2,min)
@@ -327,7 +326,7 @@ head(arc4)
 
 #Merge all data frames together for a complete data set
 combined.dist2<-merge(combined.dist1, arc4, by="plotID", all=T)
-write.csv(combined.dist2,file="combined_distance_data.csv", row.names=FALSE)
+write.csv(combined.dist2,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\arc_dist.csv", row.names=FALSE)
 
 #Nearest Water Source
 arc_water_dist<- apply(gDistance(arc_UTM, toolwater,byid=TRUE),2,min)
@@ -363,9 +362,7 @@ head(arc6)
 
 #Merge all data frames together
 combined.dist4<-merge(combined.dist3, arc6, by="plotID", all=T)
-write.csv(combined.dist4,file="combined_distance_data.csv", row.names=FALSE)
-
-write.csv(combined.dist4,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=FALSE)
+write.csv(combined.dist4,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\arc_dist.csv", row.names=FALSE)
 ################################################################################
 ################################################################################
 #Let's measure the distance from disturbance for Harvard Forest.
@@ -409,7 +406,7 @@ head(hrf2)
 
 #Merge both hrf1 and hrf2 dataframes to include all of the data for both burn_dist and bldgs_dist.
 hrf.combined.dist<-merge(hrf1, hrf2, by="plotID", all=T)
-write.csv(hrf.combined.dist,file="hrf.combined_distance.csv", row.names=FALSE)
+write.csv(hrf.combined.dist,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf_dist.csv", row.names=FALSE)
 head(hrf.combined.dist)
 
 #Roads
@@ -430,7 +427,7 @@ head(hrf3)
 
 #Merge
 hrf.combined.dist1<-merge(hrf3, hrf.combined.dist, by="plotID", all=T)
-write.csv(hrf.combined.dist1,file="hrf.combined_distance.csv", row.names=FALSE)
+write.csv(hrf.combined.dist1,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf_dist.csv", row.names=FALSE)
 head(hrf.combined.dist1)
 
 ################################################################################
@@ -476,7 +473,7 @@ head(knz2)
 
 #Merge both hrf1 and hrf2 dataframes to include all of the data for both burn_dist and bldgs_dist.
 knz.combined.dist<-merge(knz1, knz2, by="plotID", all=T)
-write.csv(knz.combined.dist,file="knz.combined_distance.csv", row.names=FALSE)
+write.csv(knz.combined.dist,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz_dist.csv", row.names=FALSE)
 head(knz.combined.dist)
 
 #Trails
@@ -497,7 +494,7 @@ head(knz3)
 
 #Merge
 knz.combined.dist1<-merge(knz3, knz.combined.dist, by="plotID", all=T)
-write.csv(knz.combined.dist1,file="knz.combined_distance.csv", row.names=FALSE)
+write.csv(knz.combined.dist1,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz_dist.csv", row.names=FALSE)
 head(knz.combined.dist1)
 
 #Buildings
@@ -518,7 +515,7 @@ head(knz4)
 
 #Merge
 knz.combined.dist2<-merge(knz4, knz.combined.dist1, by="plotID", all=T)
-write.csv(knz.combined.dist2,file="knz.combined_distance.csv", row.names=FALSE)
+write.csv(knz.combined.dist2,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz_dist.csv", row.names=FALSE)
 head(knz.combined.dist2)
 
 ################################################################################
@@ -532,7 +529,7 @@ keep[!keep %in% names(combined.dist4)]
 
 combined.distances <- combined.dist4
 combined.distances@data <- combined.distances@data[,keep] 
-write.csv(combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv", row.names=F)
+write.csv(combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\arc_dist.csv", row.names=F)
 
 #Make these data a data frame.
 combined.distances<-data.frame(combined.distances@data)
@@ -551,13 +548,13 @@ keep[!keep %in% names(hrf.combined.dist1)]
 
 hrf.combined.distances <- hrf.combined.dist1
 hrf.combined.distances@data <- hrf.combined.distances@data[,keep] 
-write.csv(hrf.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf.combined_distance.csv", row.names=F)
+write.csv(hrf.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf_dist.csv", row.names=F)
 
 #Make these data a data frame.
 hrf.combined.distances<-data.frame(hrf.combined.distances@data)
 class(hrf.combined.distances)
 head(hrf.combined.distances)
-write.csv(hrf.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf.combined_distance.csv", row.names=F)
+write.csv(hrf.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf_dist.csv", row.names=F)
 ################################################################################
 #Konza
 #Now we need to clean up the data frame and select only the columns we need.
@@ -570,20 +567,20 @@ keep[!keep %in% names(knz.combined.dist2)]
 
 knz.combined.distances <- knz.combined.dist2
 knz.combined.distances@data <- knz.combined.distances@data[,keep] 
-write.csv(knz.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz.combined_distance.csv", row.names=F)
+write.csv(knz.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz_dist.csv", row.names=F)
 
 #Make these data a data frame.
 knz.combined.distances<-data.frame(knz.combined.distances@data)
 class(knz.combined.distances)
 head(knz.combined.distances)
-write.csv(knz.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz.combined_distance.csv", row.names=F)
+write.csv(knz.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz_dist.csv", row.names=F)
 
 ################################################################################
 #Now we need to put our distance data into long format.
 #Long Format of combined.distances to characterize dist_type
 library(dplyr)
 library(reshape2)
-combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\combined_distance_data.csv")
+combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\arc_dist.csv")
 head(combined.distances)
 
 #We have some unneccessary columns that came with the spatial point data frame. So, we will exclude those to further clean up our data frame.
@@ -614,14 +611,12 @@ combined.distances$dist_type[combined.distances$dist_type=="water_dist"]<-"water
 combined.distances$dist_type[combined.distances$dist_type=="roads_dist"]<-"roads"
 sort(unique(combined.distances$dist_type))
 
-write.csv(combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\neon_plotid_dist2disturbance.csv", row.names=FALSE)
+write.csv(combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\neon_plotid_dist2disturbance_arc.csv", row.names=FALSE)
 ################################################################################
 #Harvard Forest
 #Now we need to put our distance data into long format.
 #Long Format of hrf.combined.distances to characterize dist_type
-library(dplyr)
-library(reshape2)
-hrf.combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf.combined_distance.csv")
+hrf.combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\hrf_dist.csv")
 head(hrf.combined.distances)
 
 #Create the long format
@@ -648,7 +643,7 @@ write.csv(hrf.combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final
 #Konza
 #Now we need to put our distance data into long format.
 #Long Format of knz.combined.distances to characterize dist_type
-knz.combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz.combined_distance.csv")
+knz.combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\knz_dist.csv")
 head(knz.combined.distances)
 
 #Create the long format
@@ -691,7 +686,6 @@ write.csv(knz.combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final
 save.image("NEON_LTER.RData")
 ##################################################################################################################################################################Title: Calculating the surface area of a shapefile 
 #Date: 28 June 2018
-load("NEON_LTER.RData")
 
 #Anaktuvuk Burn Area Calculation
 anak_area<-gArea(anaktuvuk)
@@ -706,6 +700,10 @@ head(anak_area)
 #Merge data 
 area_add<- merge(combined.distances, anak_area, by=0, all=TRUE)
 head(anak_area)
+head(area_add)
+
+#Change all NA values to 0
+area_add[is.na(area_add)] <- 0
 head(area_add)
 
 #Camp Buildings Area Calculation
@@ -723,28 +721,13 @@ area_add1<- merge(combined.distances, cb13_area, by=0, all=TRUE)
 head(cb13_area)
 head(area_add1)
 
-#Merge data frames
-final<-merge(area_add1, area_add, by=0, all=T)
-summary(final)
-
-#Pipeline Area Calculation **Ask Phoebe about this**
-#pipe_area<-gArea(pipeline)
-#pipe_area
-#pipe_area<- data.frame(pipe_area)
-#pipe_area
-
-#Rename column
-#names(pipe_area)[names(pipe_area)=="pipe_area"] <- "pipeline_area"
-#head(pipe_area)
-
-#Merge data 
-#area_add2<- merge(combined.distances, pipe_area, by=0, all=TRUE)
-#head(pipe_area)
-#head(area_add1)
+#Change all NA values to 0
+area_add1[is.na(area_add1)] <- 0
+head(area_add1)
 
 #Merge data frames
-#final1<-merge(final, area_add2, by=0, all=T)
-#summary(final)
+final<-merge(area_add1, area_add, by=c("Row.names","plotID", "siteID", "dist_type", "distance_m", "siteNam"), all=T)
+head(final)
 
 #Thermokarst Area Calculation
 thermo_area<-gArea(thermokarst)
@@ -757,32 +740,17 @@ names(thermo_area)[names(thermo_area)=="thermo_area"] <- "thermokarst_area"
 head(thermo_area)
 
 #Merge data 
-area_add3<- merge(combined.distances, thermo_area, by=0, all=TRUE)
+area_add2<- merge(combined.distances, thermo_area, by=0, all=TRUE)
 head(thermo_area)
-head(area_add3)
+head(area_add2)
+
+#Change all NA values to 0
+area_add2[is.na(area_add2)] <- 0
+head(area_add2)
 
 #Merge data frames
-final2<-merge(final, area_add3, by=0, all=T)
+final2<-merge(final, area_add2, by=c("Row.names","plotID", "siteID", "dist_type", "distance_m", "siteNam"), all=T)
 names(final2)
-
-#Roads and Trails Area Calculation **Ask Phoebe About This**
-#rt_area<-gArea(rt)
-#rt_area
-#rt_area<- data.frame(rt_area)
-#rt_area
-
-#Rename column
-#names(rt_area)[names(rt_area)=="rt_area"] <- "roads_trails_area"
-#head(rt_area)
-
-#Merge data 
-#area_add4<- merge(combined.distances, rt_area, by=0, all=TRUE)
-#head(rt_area)
-#head(area_add4)
-
-#Merge data frames
-#final3<-merge(final2, area_add4, by=0, all=T)
-#names(final3)
 
 #Water Source Area Calculation
 water_area<-gArea(toolwater)
@@ -795,44 +763,31 @@ names(water_area)[names(water_area)=="water_area"] <- "stream_area"
 head(water_area)
 
 #Merge data 
-area_add5<- merge(combined.distances, water_area, by=0, all=TRUE)
+area_add3<- merge(combined.distances, water_area, by=0, all=TRUE)
 head(water_area)
-head(area_add5)
+head(area_add3)
+
+#Change all NA values to 0
+area_add3[is.na(area_add3)] <- 0
+head(area_add3)
 
 #Merge data frames
-final4<-merge(final3, area_add5, by=0, all=T)
-names(final4)
+final3<-merge(final2, area_add3, by=c("Row.names","plotID", "siteID", "dist_type", "distance_m", "siteNam"), all=T)
+names(final3)
 
-write.csv(final4,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=FALSE)
-##################################################################################################################################################################
+write.csv(final3,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=FALSE)
+###############################################################################################################################################################
 #Now we need to clean up the data frame and select only the columns we need.
 #Select important columns
-keep=c("plotID", "siteID", "siteNam", "burn_dist",	"bldgs_dist",	"pipeline_dist",	"thermokarst_dist", "water_dist", "roads_dist", "stream_area", "roads_trails_area", "thermokarst_area", "pipeline_area", "burn_area" )
+keep=c("plotID", "siteID", "dist_type", "distance_m", "buildings_area", "burn_area", "thermokarst_area", "stream_area")
 
 # Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
-keep[!keep %in% names(final4)]
+keep[!keep %in% names(final3)]
 
-plot_level_dataframe <- final4
-plot_level_dataframe@data <- plot_level_dataframe@data[,keep] 
-write.csv(plot_level_dataframe, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=F)
-
-#Make these data a data frame.
-plot_level_dataframe<-data.frame(plot_level_dataframe@data)
+plot_level_dataframe <- final3
 class(plot_level_dataframe)
-head(plot_level_dataframe)
-##################################################################################################################################################################
-#Now we need to put our distance data into long format.
-#Long Format of combined.distances to characterize dist_type
-library(dplyr)
-library(reshape2)
-plot_level_dataframe<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv")
-head(plot_level_dataframe)
-
-#We have some unneccessary columns that came with the spatial point data frame. So, we will exclude those to further clean up our data frame.
-plot_level_dataframe$coords.x1<-NULL
-plot_level_dataframe$coords.x2<-NULL
-plot_level_dataframe$optional<-NULL
-head(plot_level_dataframe)
-
-#Create the long format
+plot_level_dataframe <- plot_level_dataframe[,keep] 
+write.csv(plot_level_dataframe, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=F)
+###############################################################################
+#Next refer to script neon_within_site_prep.R
 

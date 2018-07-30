@@ -207,16 +207,113 @@ toolik$plotID
 
 #Check for duplicates
 toolik[duplicated(toolik$plotID),]
+#There should be two sets of plotIDs -  one for birds and one for plants.
+#-------------------------------------------------------------------------------
+# Now we will pull in temperature and precipitation data
+#-------------------------------------------------------------------------------
+#Toolik Temp Data
+library(rgdal)
+arc_temp<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\ak_tempmean\\tmeananl\\hdr.adf")
+plot(arc_temp)
+plot(arc, add=T)
+arc_temp_spdf = SpatialPointsDataFrame(arc@data[,20:19], proj4string=arc_temp@crs,arc@data)
+arc_temp_spdf
+
+tool_temp<- extract(arc_temp, arc, tool_temp=TRUE, method='bilinear')
+plot(tool_temp)
+tool_temp_avg<-(tool_temp/100)
+tool_temp_avg
+
+#transform to dataframe
+class(tool_temp_avg)
+tool_temp_avg<-data.frame(tool_temp_avg)
+head(tool_temp_avg)
+names(tool_temp_avg)[names(tool_temp_avg)=="tool_temp_avg"]<-"arc_tmean"
+head(tool_temp_avg)
+
+#Toolik Precipitaiton Data
+arc_ppt<-raster("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\arc\\gis_data\\ak_precipmean\\pptanl\\hdr.adf")
+plot(arc_ppt)
+plot(arc, add=T)
+arc_ppt_spdf = SpatialPointsDataFrame(arc@data[,20:19], proj4string=arc_ppt@crs,arc@data)
+arc_ppt_spdf
+tool_ppt<- extract(arc_ppt, arc, tool_ppt=TRUE, method='bilinear')
+plot(tool_ppt)
+tool_ppt #mean values of precipitation in meters per neon plot in Toolik
+
+#transform to dataframe
+class(tool_ppt)
+tool_ppt<-data.frame(tool_ppt)
+class(tool_ppt)
+names(tool_ppt)[names(tool_ppt)=="arc_ppt"]<-"arc_precip"
+head(tool_ppt)
+
+#combine with original shape file.
+#Toolik
+arc<-data.frame(arc@data)
+toolik_ppt<-cbind(tool_ppt, arc)
+summary(toolik_ppt)
+toolik_temp<-cbind(tool_temp_avg, arc)
+summary(toolik_temp)
+names(toolik_temp)
+names(toolik_ppt)
+
+#subset
+keep=c("plotID", "arc_tmean")
+toolik_temp1<-toolik_temp[,keep]
+head(toolik_temp1)
+
+#Check for duplicates
+toolik_temp1[duplicated(toolik_temp1$plotID),]
+
+#Take the average. We want one value per plotID
+attach(toolik_temp1)
+toolik_temp1_mean<-aggregate(toolik_temp1[c("arc_tmean")],list(plotID=plotID),FUN=mean)
+detach(toolik_temp1)
+head(toolik_temp1_mean)
+
+#Check again for duplicates
+toolik_temp1_mean[duplicated(toolik_temp1_mean$plotID),]
+names(toolik_temp1_mean)[names(toolik_temp1_mean)=="arc_tmean"]<-"tool_tmean"
+head(toolik_temp1_mean)
+
+#subset
+keep=c("plotID", "tool_ppt")
+toolik_ppt1<-toolik_ppt[,keep]
+head(toolik_ppt1)
+
+#Check for duplicates
+toolik_ppt1[duplicated(toolik_ppt1$plotID),]
+
+#Take the average. We want one value per plotID
+attach(toolik_ppt1)
+toolik_ppt1_mean<-aggregate(toolik_ppt1[c("tool_ppt")],list(plotID=plotID),FUN=mean)
+detach(toolik_ppt1)
+
+#Check again for duplicates
+toolik_ppt1_mean[duplicated(toolik_ppt1_mean$plotID),]
+
+#combine
+ttp<-merge(toolik_ppt1_mean, toolik_temp1_mean, by="plotID")
+head(ttp)
+
+#Check again for duplicates
+ttp[duplicated(ttp$plotID),]
+
+#combine with toolik
+ttp1<- merge(toolik, ttp, by="plotID")
+head(ttp1)
+
 #Now that we have a code with all of the environment, richness, and distance data we can start subsetting by taxa.
-#--------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 #Separate birds and plants richness
 #--------------------------------------------------------------------------------
 #birds
-arc_bird<-toolik[toolik$taxa=="bird",]
+arc_bird<-ttp1[ttp1$taxa=="bird",]
 head(arc_bird)
 
 #plants
-arc_plant<-toolik[toolik$taxa=="plant",]
+arc_plant<-ttp1[ttp1$taxa=="plant",]
 head(arc_plant)
 #################################################################################
 # take a look at the relationship between plant richness and elevation
