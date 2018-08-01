@@ -4,6 +4,9 @@
 # Authors:      Kyra Hoerr  
 # Date:         16 July 2018
 
+#Clear all existing data
+rm(list=ls())
+
 # Set working directory
 
 # Libraries
@@ -17,54 +20,28 @@ library(GISTools)
 library(maptools)
 
 # Read NEON point data
-terrestrial <- readOGR(dsn="KNZ_basemap/All_NEON_TOS_Plots_V4", "All_Neon_TOS_Centroid_V4")
+terrestrial <- readOGR(dsn="C:/Users/Kyra/Documents/Harvard/data/NEON_Spatial/All_NEON_TOS_Plots_V4", "All_Neon_TOS_Centroid_V4")
 knz <- terrestrial[terrestrial$siteNam=="Konza Prairie Biological Station",]
 knz_map <- spTransform(knz, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 plot(knz_map)
 points(knz_map, col="red")
 
 # Read watershed code data
-code_data <- read.csv("KNZ_basemap/KFH011.csv") # needs to be put on G drive
+code_data <- read.csv("C:/Users/Kyra/Documents/Harvard/data/KP/LTER/KFH01/KFH011_update.csv")
 #####################################################################################
 ## Read in spatial data
 
 # Read GIS02
 # get all files with the .shp extension from working directory 
-#setwd("C:/Users/Kyra/Documents/Harvard/data/KP/LTER/GIS02") 
+setwd("C:/Users/Kyra/Documents/Harvard/data/KP/LTER/GIS02")
 
-setwd('C:/Users/srecord/Dropbox/HF_REU/2018/Kyra_Hoerr/LTER/GIS02')
 shps <- dir(getwd(), "*.shp$")
 
 for (shp in shps) {
   assign(shp, readOGR(shp))
 }
- Rename GIS032 
+# Rename GIS032 
 names(GIS032.shp) <- c("CODE", "NAME", "AREA", "PERIMETER", "ACRES", "HECTARES", "DATAID", "DATACODE")
-
-# Determine maximum extent of all shapefiles
-shpextents <- matrix(nrow=length(shps), ncol=5)
-colnames(shpextents) <- c('watershed','xmin','xmax','ymin','ymax')
-
-for(i in 1:length(shps)){
-  tempshp <- readOGR(shps[i])
-  shpextents[i,1] <- shps[i]
-  shpextents[i,2:5] <- as.vector(extent(tempshp))
-}
-
-# determine max extent covered by all shapefiles. this will become the extent of the rasterized shapefiles.
-totalextent <- extent(as.numeric(min(shpextents[,2])),as.numeric(max(shpextents[,3])), as.numeric(min(shpextents[,4])), as.numeric(max(shpextents[,5])))
-
-# Assign a null object for the start of the raster stack. 
-GIS02_burnstack <-stack()
-
-for(i in 1:length(shps)){
-  tempshp <- readOGR(shps[i])
-  blank_raster <- raster(nrow = 100, ncol = 100, extent(totalextent))
-  temp_burn_raster <- rasterize(tempshp, blank_raster, fun='mean') # note field needs to be filled in for this to work. currently does not work
-  GIS02_burnstack <- addLayer(GIS02_burnstack, temp_burn_raster)
-}
-
-names(GIS02_burnstack) <- shps
 
 # Stack GIS02
 GIS02 <- rbind(GIS020.shp,GIS021.shp,GIS022.shp,GIS023.shp,GIS024.shp,GIS025.shp,GIS026.shp,GIS027.shp,GIS028.shp,GIS029.shp,GIS030.shp,GIS031.shp,GIS032.shp)
@@ -97,13 +74,16 @@ GIS05 <- rbind(GIS050.shp,GIS051.shp,GIS052.shp,GIS053.shp,GIS054.shp,GIS055.shp
 GIS05
 
 # Find fire frequency by watershed code
-KNZ_fire_freq <- as.data.frame(table(GIS05$NAME))
-names(KNZ_fire_freq)[1] <- "NAME"
+KNZ_fire_freq <- as.data.frame(table(GIS05$CODE))
+names(KNZ_fire_freq)[1] <- "CODE"
 KNZ_fire_freq
 
 # Merge frequency with GIS05
-GIS05@data = data.frame(GIS05@data, KNZ_fire_freq[match(GIS05$NAME,KNZ_fire_freq$NAME),])
+GIS05@data = data.frame(GIS05@data, KNZ_fire_freq[match(GIS05$CODE,KNZ_fire_freq$CODE),])
 KNZ_fire_freq_map <- GIS05[,-10] # number corresponds to "code.1"
+# Export KNZ supplemental fire
+writeOGR(obj=KNZ_fire_freq_map, dsn= "C:/Users/Kyra/Documents/Harvard/data/KP/LTER", layer="KNZ_fire_freq_map_2", driver="ESRI Shapefile")
+
 
 # Export KNZ frequency data
 writeOGR(obj=KNZ_fire_freq_map, dsn= "C:/Users/Kyra/Documents/Harvard/data/KP/LTER", layer="KNZ_fire_freq_map", driver="ESRI Shapefile") # this is in geographical projection
@@ -126,15 +106,17 @@ GIS13 <- rbind(GIS130.shp,GIS131.shp,GIS132.shp,GIS133.shp,GIS134.shp,GIS135.shp
 GIS13
 
 # Find fire frequency by watershed code
-KNZ_sup_freq <- as.data.frame(table(GIS13$NAME))
-names(KNZ_sup_freq)[1] <- "NAME"
+KNZ_sup_freq <- as.data.frame(table(GIS13$CODE))
+names(KNZ_sup_freq)[1] <- "CODE"
 KNZ_sup_freq
 
 # Merge frequency with map_GIS13
-GIS13@data = data.frame(GIS13@data, KNZ_sup_freq[match(GIS13$NAME,KNZ_sup_freq$NAME),])
+GIS13@data = data.frame(GIS13@data, KNZ_sup_freq[match(GIS13$CODE,KNZ_sup_freq$CODE),])
 GIS13
 KNZ_sup_freq_map <- GIS13[,-10] # number corresponds to "names.1"
 KNZ_sup_freq_map
+# Export KNZ supplemental fire
+writeOGR(obj=KNZ_sup_freq_map, dsn= "C:/Users/Kyra/Documents/Harvard/data/KP/LTER", layer="KNZ_sup_freq_map", driver="ESRI Shapefile")
 
 # Combine GIS05 and GIS13 (fire history and supplemental burn history)
 final_burn_hist <- rbind(KNZ_fire_freq_map,KNZ_sup_freq_map)
@@ -142,9 +124,17 @@ final_burn_hist <- spTransform(final_burn_hist, CRS("+proj=longlat +ellps=WGS84 
 write.csv(final_burn_hist, file = "final_burn_hist.csv")
 
 # Export KNZ frequency data
-writeOGR(obj=final_burn_hist, dsn= "C:/Users/Kyra/Documents/Harvard/data/KP/LTER", layer="KNZ_complete_burn_map", driver="ESRI Shapefile") # this is in geographical projection
+writeOGR(obj=final_burn_hist, dsn= "C:/Users/Kyra/Documents/Harvard/data/KP/LTER", layer="KNZ_complete_burn_map_2", driver="ESRI Shapefile") # this is in geographical projection
 
 # Find NEON points
 NEON_burn <- over(knz_map,final_burn_hist)
 NEON_burn$plotID <- knz_map$plotID
 write.csv(NEON_burn, file = "NEON_burn.csv")
+
+# Read GIS file
+NEON_fire<- readOGR("C:/Users/Kyra/Documents/Harvard/data/KP/LTER","NEON_fire_freq")
+# Subset NEON_fire
+NEON_fire <- NEON_fire[,-(8:46)] #remove columns
+NEON_fire <- NEON_fire[,-(2:3)] #remove columns
+head(NEON_fire)
+
