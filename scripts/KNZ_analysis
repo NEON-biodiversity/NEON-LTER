@@ -1,0 +1,215 @@
+# Title:        Konza Prairie Data
+# Site:         Konza Prairie
+# Data Sources:  
+# Authors:      Kyra Hoerr  
+# Date:         28 June 2018
+
+
+## Within Site Analysis of Konza Prairie
+## July 25, 2018
+
+#Clear all existing data
+rm(list=ls())
+
+#Close graphics devices
+graphics.off()
+
+# Set working directory
+setwd("C:/Users/Kyra/Documents/Harvard/neon")
+# Google drive directory: "NEON_LTER_2018/data/raw_data/neon"
+
+#Install/load packages
+for (package in c("lme4", "plyr", "dplyr", "purrr", "raster", "reshape2", "lubridate", "ggplot2")) {
+  if (!require(package, character.only=T, quietly=T)) {
+    install.packages(package)
+    library(package, character.only=T)
+  }
+}
+
+# This code for ggplot2 sets the theme to mostly black and white 
+# (Arial font, and large font, base size=24)
+theme_set(theme_bw(12))
+theme_update(axis.text.x = element_text(size = 10, angle = 90),
+             axis.text.y = element_text(size = 10))
+
+# ----------------------------------------
+# Load all organismal richness and within-site neon plot-level disturbance data 
+# ----------------------------------------
+
+# Read disturbance data
+NEON_fire<- readOGR("C:/Users/Kyra/Documents/Harvard/data/KP/LTER","NEON_fire_freq")
+# Convert to data frame
+NEON_fire <- as.data.frame(NEON_fire)
+# Subset NEON_fire
+names(NEON_fire)
+NEON_fire <- NEON_fire[,-c((1:4),(6:46),(48:49))] #remove columns
+names(NEON_fire)
+# Remove duplicates
+NEON_fire = NEON_fire[order(NEON_fire[,'plotID']),]
+NEON_fire = NEON_fire[!duplicated(NEON_fire$plotID),]
+head(NEON_fire)
+##########################################################################
+
+#organismal data
+mammals <- read.csv("./richness/mammal_richness_cumulative_plot.csv")
+plants<- read.csv("./richness/plant_richness_cumulative_plot.csv")
+birds<- read.csv( "./richness/bird_richness_cumulative_plot.csv")
+beetles <- read.csv( "./richness/beetle_richness_cumulative_plot.csv")
+
+#Check files
+head(mammals)
+head(birds)
+head(plants)
+head(beetles)
+
+# add a column for taxa
+mammals$taxa<-"mammal"
+plants$taxa<-"plant"
+birds$taxa<-"bird"
+beetles$taxa <- "beetles"
+
+# do this for each taxonomic group
+head(mammals)
+head(birds)
+head(plants)
+head(beetles)
+
+# merge all taxonomic data together; before you do this, make sure there is a column for taxa.
+rich<-rbind(birds, plants, mammals ,beetles)
+
+#subset data for Konza Prairie
+unique(rich$siteID)
+#Use for adding konza Prairie data
+konz_rich<-rich[rich$siteID==c("KONZ","KONA"),]
+head(konz_rich)
+str(konz_rich)
+
+#Take the maximum richness value before merging with distance data
+names(konz_rich)
+konz_rich_max<-konz_rich%>%
+  group_by(plotID, taxa) %>%
+  slice(which.max(richness))
+head(konz_rich_max)
+konz_rich_max<-data.frame(konz_rich_max)
+unique(konz_rich_max$plotID)
+write.csv(konz_rich_max, file="richness_max2.csv")
+#some plotIDs are NA for richness because they have not been surveyed yet.
+
+#subset
+keep=c("siteID", "plotID", "richness", "taxa")
+konz_rich_max<-konz_rich_max[,keep]
+head(konz_rich_max)
+
+#merge with disturbance data
+dist_rich <- merge(konz_rich_max, NEON_fire, by="plotID", all.x=TRUE)
+head(dist_rich)
+
+library(rgdal)
+
+#--------------------------------------------------------------------------------
+#Separate birds and plants richness
+#--------------------------------------------------------------------------------
+#birds
+knz_bird<-dist_rich[dist_rich$taxa=="bird",]
+knz_bird = knz_bird[sort(knz_bird[,'Freq']),]
+head(knz_bird)
+
+#plants
+knz_plant<-dist_rich[dist_rich$taxa=="plant",]
+head(knz_plant)
+knz_plant$Freq <- as.numeric(knz_plant$Freq)
+knz_plant <- knz_plant[order(knz_plant$Freq),]
+
+#mammals
+knz_mammal <- dist_rich[dist_rich$taxa=="mammal",]
+head(knz_mammal)
+
+#beetles
+knz_beetle<-dist_rich[dist_rich$taxa=="beetles",]
+head(knz_beetle)
+knz_beetle$Freq <- as.numeric(knz_beetle$Freq)
+knz_beetle <- knz_beetle[order(knz_beetle$Freq),]
+
+#################################################################################
+# take a look at the relationship between plant richness and burns
+ep <- ggplot(knz_plant, aes(x=Freq, y=richness)) +
+  geom_point(aes()) 
+ep
+
+# take a look at the relationship between bird richness and burns
+er <- ggplot(knz_bird, aes(x=Freq, y=richness)) +
+  geom_point(aes()) 
+er
+
+# take a look at the relationship between mammal richness and burns
+er <- ggplot(knz_mammal, aes(x=Freq, y=richness)) +
+  geom_point(aes()) 
+er
+
+# take a look at the relationship between beetle richness and burns
+eb <- ggplot(knz_beetle, aes(x=Freq, y=richness)) +
+  geom_point(aes()) 
+eb
+#################################################################################
+#Histograms
+
+hist(knz_plant$richness)
+hist(knz_bird$richness)
+hist(knz_mammal$richness)
+
+#################################################################################
+#Now you're ready for modeling. See script neon_within_site_analysis (below).
+
+#Correlation Tests this computes all pairwise correlations using Pearson's correlation test.
+names(knz_plant)
+
+# This is the first linear model. First is the plant species richness data ~ burn frequency.
+pm1<-lm(knz_plant$richness~knz_plant$Freq, na.action='na.omit')
+anova(pm1)
+hist(resid(pm1))
+
+# Plot the relationship between richness and the burn frequency
+rich.freq<-ggplot(knz_plant, aes(x = knz_plant$Freq, y =knz_plant$richness)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+rich.freq+labs(title="Plants",
+               x ="Burn Frequency", y = "Species Richness")
+
+################################################################################
+
+# This is the second linear model. First is the bird species richness data ~ burn frequency.
+bm1<-lm(knz_bird$richness~knz_bird$Freq)
+summary(bm1)
+hist(resid(bm1))
+
+# Plot the relationship between richness and the burn frequency
+bird_rich<-ggplot(knz_bird, aes(x = knz_bird$Freq, y =knz_bird$richness)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+bird_rich+labs(title="Birds",
+               x ="Burn Frequency", y = "Species Richness")
+
+################################################################################
+
+# This is the third linear model. First is the mammal species richness data ~ burn frequency.
+mm1<-lm(knz_mammal$richness~knz_mammal$Freq)
+summary(mm1)
+hist(resid(mm1))
+
+# Plot the relationship between richness and the burn frequency
+mammal_rich<-ggplot(knz_mammal, aes(x = knz_mammal$Freq, y =knz_mammal$richness)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue")
+mammal_rich+labs(title="Mammals",
+               x ="Burn Frequency", y = "Species Richness")
+###############################################################################
+# Ticks
+tick_data <- read.csv("C:/Users/Kyra/Documents/Harvard/neon/organismal_data/tick_samples.csv")
+
+# Remove unecessary columns
+ticks <- tick_data[,-c((1:2),(4:23),(25:31))]
+ticks <- ticks[order(ticks$plotID),]
+
+# Subset for Konza Prairie
+ticks <- ticks[grep(c("KONZ","KONA"),ticks$plotID), ]
+head(ticks)
