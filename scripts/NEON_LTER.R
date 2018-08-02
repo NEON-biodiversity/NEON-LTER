@@ -98,8 +98,6 @@ plot(hrf_roads)
 
 ################################################################################
 #KNZ data
-#Roads
-
 #Burn History
 burn1972 <- readOGR(".\\knz\\LTER\\GIS05", "GIS050")
 map_burn72 <- spTransform(burn1972, CRS("+proj=utm +zone=14 ellps=WGS84"))
@@ -254,6 +252,13 @@ structure_data <- readOGR(".\\knz\\LTER\\GIS19", "GIS190")
 structures <- spTransform(structure_data, CRS("+proj=utm +zone=14 ellps=WGS84"))
 
 ################################################################################
+#subset toolik data
+names(arc_UTM)
+arc_variables <- c("elevatn", "siteID", "plotID", "nlcdCls", "slpGrdn", "slpAspc")
+arc_UTM <- arc_UTM[arc_variables]
+head(arc_UTM)
+str(arc_UTM)
+
 #Now we are going to measure distance between NEON data collection points and the Anaktuvuk fire.
 arc_burn_dist<- apply(gDistance(arc_UTM, anaktuvuk,byid=TRUE),2,min)
 arc_burn_dist<- data.frame(arc_burn_dist)
@@ -522,7 +527,7 @@ head(knz.combined.dist2)
 #Now we need to clean up the data frame and select only the columns we need.
 #Select important columns
 #Toolik
-keep=c("plotID", "siteID", "siteNam", "burn_dist",	"bldgs_dist",	"pipeline_dist",	"thermokarst_dist", "water_dist", "roads_dist" )
+keep=c("plotID", "siteID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "burn_dist",	"bldgs_dist",	"pipeline_dist",	"thermokarst_dist", "water_dist", "roads_dist" )
 
 # Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
 keep[!keep %in% names(combined.dist4)]
@@ -541,7 +546,7 @@ head(combined.distances)
 #Now we need to clean up the data frame and select only the columns we need.
 names(hrf.combined.dist1)
 #Select important columns
-keep=c("plotID", "siteID", "cut_dist",	"bldgs_dist", "roads_dist","elevatn", "slpGrdn", "slpAspc", "nlcdCls")
+keep=c("plotID", "siteID", "elevatn","nlcdCls", "slpGrdn", "slpAspc", "cut_dist",	"bldgs_dist", "roads_dist")
 
 # Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
 keep[!keep %in% names(hrf.combined.dist1)]
@@ -560,7 +565,7 @@ write.csv(hrf.combined.distances, file="G:\\My Drive\\NEON_LTER_2018\\data\\fina
 #Now we need to clean up the data frame and select only the columns we need.
 names(knz.combined.dist2)
 #Select important columns
-keep=c("plotID", "siteID", "burn_dist",	"bldgs_dist", "roads_dist", "trails_dist", "elevatn", "slpGrdn", "slpAspc", "nlcdCls")
+keep=c("plotID", "siteID","elevatn", "nlcdCls", "slpGrdn", "slpAspc", "burn_dist",	"bldgs_dist", "roads_dist", "trails_dist")
 
 # Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
 keep[!keep %in% names(knz.combined.dist2)]
@@ -590,7 +595,7 @@ combined.distances$optional<-NULL
 head(combined.distances)
 
 #Create the long format
-combined.distances<-melt(combined.distances, id=c("plotID", "siteID", "siteNam"))
+combined.distances<-melt(combined.distances, id=c("plotID", "siteID","elevatn", "nlcdCls", "slpGrdn", "slpAspc"))
 head(combined.distances)
 
 #Rename columns to specify disturbance type and distance in meters.
@@ -620,7 +625,7 @@ hrf.combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data
 head(hrf.combined.distances)
 
 #Create the long format
-hrf.combined.distances<-melt(hrf.combined.distances, id=c("plotID", "siteID"))
+hrf.combined.distances<-melt(hrf.combined.distances, id=c("plotID", "siteID","elevatn", "nlcdCls", "slpGrdn", "slpAspc"))
 head(hrf.combined.distances)
 
 #Rename columns to specify disturbance type and distance in meters.
@@ -647,7 +652,7 @@ knz.combined.distances<-read.csv("G:\\My Drive\\NEON_LTER_2018\\data\\final_data
 head(knz.combined.distances)
 
 #Create the long format
-knz.combined.distances<-melt(knz.combined.distances, id=c("plotID", "siteID", "elevatn", "slpAspc", "slpGrdn", "nlcdCls"))
+knz.combined.distances<-melt(knz.combined.distances, id=c("plotID", "siteID","elevatn", "nlcdCls", "slpGrdn", "slpAspc"))
 head(knz.combined.distances)
 
 #Rename columns to specify disturbance type and distance in meters.
@@ -665,19 +670,6 @@ knz.combined.distances$dist_type[knz.combined.distances$dist_type=="roads_dist"]
 knz.combined.distances$dist_type[knz.combined.distances$dist_type=="burn_dist"]<-"burn"
 knz.combined.distances$dist_type[knz.combined.distances$dist_type=="trails_dist"]<-"trails"
 sort(unique(knz.combined.distances$dist_type))
-head(knz.combined.distances)
-
-#Spatial Data is still present, so we will exclude these variables to make our data frame more clear.
-knz.combined.distances$coords.x1<-NULL
-knz.combined.distances$coords.x2<-NULL	
-knz.combined.distances$coords.x1.1<-NULL
-knz.combined.distances$coords.x2.1<-NULL	
-knz.combined.distances$coords.x1.2<-NULL	
-knz.combined.distances$coords.x2.2<-NULL	
-knz.combined.distances$coords.x1.3<-NULL	
-knz.combined.distances$coords.x2.3<-NULL	
-knz.combined.distances$optional<-NULL
-
 head(knz.combined.distances)
 class(knz.combined.distances)
 write.csv(knz.combined.distances,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\neon_plotid_dist2disturbance_knz.csv", row.names=FALSE)
@@ -726,7 +718,7 @@ area_add1[is.na(area_add1)] <- 0
 head(area_add1)
 
 #Merge data frames
-final<-merge(area_add1, area_add, by=c("Row.names","plotID", "siteID", "dist_type", "distance_m", "siteNam"), all=T)
+final<-merge(area_add1, area_add, by=c("Row.names","plotID", "siteID", "elevatn", "nlcdCls", "slpAspc", "slpGrdn", "dist_type", "distance_m"), all=T)
 head(final)
 
 #Thermokarst Area Calculation
@@ -749,7 +741,7 @@ area_add2[is.na(area_add2)] <- 0
 head(area_add2)
 
 #Merge data frames
-final2<-merge(final, area_add2, by=c("Row.names","plotID", "siteID", "dist_type", "distance_m", "siteNam"), all=T)
+final2<-merge(final, area_add2, by=c("Row.names","plotID", "siteID", "elevatn", "nlcdCls", "slpAspc", "slpGrdn", "dist_type", "distance_m"), all=T)
 names(final2)
 
 #Water Source Area Calculation
@@ -772,14 +764,14 @@ area_add3[is.na(area_add3)] <- 0
 head(area_add3)
 
 #Merge data frames
-final3<-merge(final2, area_add3, by=c("Row.names","plotID", "siteID", "dist_type", "distance_m", "siteNam"), all=T)
+final3<-merge(final2, area_add3, by=c("Row.names","plotID", "siteID", "elevatn", "nlcdCls", "slpAspc", "slpGrdn", "dist_type", "distance_m"), all=T)
 names(final3)
 
 write.csv(final3,file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\disturbance\\final_plot_level.csv", row.names=FALSE)
 ###############################################################################################################################################################
 #Now we need to clean up the data frame and select only the columns we need.
 #Select important columns
-keep=c("plotID", "siteID", "dist_type", "distance_m", "buildings_area", "burn_area", "thermokarst_area", "stream_area")
+keep=c("plotID", "siteID", "elevatn", "nlcdCls", "slpAspc", "slpGrdn", "dist_type", "distance_m", "buildings_area", "burn_area", "thermokarst_area", "stream_area")
 
 # Check that all names in keep are in combined.dist3. You want this result to be zero. If it is anything other than zero, you need to figure out what the appropriate column names are.
 keep[!keep %in% names(final3)]

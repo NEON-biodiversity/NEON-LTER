@@ -2,9 +2,14 @@
 # Author: Cameo Chilcutt
 # Date: 12 July 2018
 
-# Start with a clear workspace and set working directory to google drive -> NEON_LTER_2018 folder -> data -> raw_data
+# Start with a clear workspace and set working directory.
 rm(list=ls())
-setwd("G:\\My Drive\\NEON_LTER_2018\\data\\final_data")
+google_drive <- 'G:\\My Drive\\NEON_LTER_2018\\data'
+setwd(file.path(google_drive, 'final_data\\neon')) # GD location
+# file path location for LTER disturbance and richness data by NEON plot
+data_path <- file.path(google_drive, 'final_data\\neon')
+fig_path <- file.path(google_drive, 'output')
+
 
 #install these packages and load the libraries
 library(rgdal)
@@ -18,13 +23,19 @@ library(ggplot2)
 library(ggmap) 
 
 #Read in these csv files to work with distance calculations
-knz_dist<-read.csv(".\\neon\\disturbance\\knz_dist.csv")
-hrf_dist<-read.csv(".\\neon\\disturbance\\hrf_dist.csv")
-tool_dist<-read.csv(".\\neon\\disturbance\\arc_dist.csv")
+knz_dist<-read.csv(file.path(data_path, "./disturbance/knz_dist.csv"),stringsAsFactors = FALSE)
+hrf_dist<-read.csv(file.path(data_path, "./disturbance/hrf_dist.csv"),stringsAsFactors = FALSE)
+tool_dist<-read.csv(file.path(data_path, "./disturbance/arc_dist.csv"),stringsAsFactors = FALSE)
 
 names(knz_dist)
 names(hrf_dist)
 names(tool_dist)
+
+#exclude unnecessary columns
+tool_dist$coords.x1<-NULL	
+tool_dist$coords.x2<-NULL	
+tool_dist$optional<-NULL	
+head(tool_dist)
 
 #organismal data
 mammals <- read.csv(file.path(data_path,"./richness/mammal_richness_cumulative_plot.csv"), stringsAsFactors = FALSE)
@@ -88,96 +99,60 @@ all_rich_max<-all_rich%>%
 head(all_rich_max)
 all_rich_max<-data.frame(all_rich_max)
 unique(all_rich_max$plotID)
-write.csv(all_rich_max, file="all_richness_max.csv")
+write.csv(all_rich_max, file="G://My Drive//NEON_LTER_2018//data//final_data//neon//richness//bird_plant_max_richness.csv")
 #some plotIDs are NA for richness because they have not been surveyed yet.
 
 #subset
 keep=c("siteID", "plotID", "richness", "taxa")
 all_rich_max<-all_rich_max[,keep]
 head(all_rich_max)
-##########################################################################################
+###################################################################################
 #Now that we have the richness max values for KNZ, TOOL, and HRF, we will combine the distance data for these three sites.
-names(toolik)
-names(knz.combined.dist2)
-names(hrf.combined.dist1)
-
-#Convert all files to data.frame
-knz_final<-data.frame(knz.combined.dist2)
-names(knz_final)
-hrf_final<-data.frame(hrf.combined.dist1)
-names(hrf_final)
-
-#Konza
-#We have some unneccessary columns that came with the spatial point data frame. So, we will exclude those to further clean up our data frame.
-knz_final$coords.x1<-NULL
-knz_final$coords.x2<-NULL
-knz_final$coords.x1.1<-NULL
-knz_final$coords.x2.1<-NULL
-knz_final$coords.x1.2<-NULL
-knz_final$coords.x2.2<-NULL
-knz_final$coords.x1.3<-NULL
-knz_final$coords.x2.3<-NULL
-knz_final$optional<-NULL
-head(knz_final)
-
-#Harvard Forest
-#We have some unneccessary columns that came with the spatial point data frame. So, we will exclude those to further clean up our data frame.
-hrf_final$coords.x1<-NULL
-hrf_final$coords.x2<-NULL
-hrf_final$coords.x1.1<-NULL
-hrf_final$coords.x2.1<-NULL
-hrf_final$coords.x1.2<-NULL
-hrf_final$coords.x2.2<-NULL
-hrf_final$optional<-NULL
-head(hrf_final)
+names(tool_dist)
+names(hrf_dist)
+names(knz_dist)
 
 #Toolik
 #Rename columns
 #Rename columns to specify disturbance type and distance in meters.
-names(toolik)[names(toolik)=="distance_m.roads"]<-"roads_dist"
-names(toolik)[names(toolik)=="distance_m.thermokarst"]<-"thermo_dist"
-names(toolik)[names(toolik)=="distance_m.pipeline"]<-"pipe_dist"
-names(toolik)[names(toolik)=="distance_m.burn"]<-"severe_dist"
-names(toolik)[names(toolik)=="distance_m.buildings"]<-"bldgs_dist"
-names(toolik)
+names(tool_dist)[names(tool_dist)=="burn_dist"]<-"severe_dist"
+names(tool_dist)
 
 #Konza
-names(knz_final)[names(knz_final)=="burn_dist"]<-"severe_dist"
-knz_final<-data.frame(knz_final)
-head(knz_final)
+names(knz_dist)[names(knz_dist)=="burn_dist"]<-"severe_dist"
+head(knz_dist)
 
 #Change all 0 values for distance to 0.001
-knz_final$severe_dist[knz_final$severe_dist == 0] <- 1
-head(knz_final)
+knz_dist$severe_dist[knz_dist$severe_dist == 0] <- 1
+head(knz_dist)
 
 #Harvard
-names(hrf_final)[names(hrf_final)=="cut_dist"]<-"severe_dist"
-hrf_final<-data.frame(hrf_final)
-head(hrf_final)
+names(hrf_dist)[names(hrf_dist)=="cut_dist"]<-"severe_dist"
+head(hrf_dist)
 #Change all 0 values for distance to 0.001
-hrf_final$severe_dist[hrf_final$severe_dist == 0] <- 1
-head(hrf_final)
+hrf_dist$severe_dist[hrf_dist$severe_dist == 0] <- 1
+head(hrf_dist)
 
 #Bind these dataframes. We want to use rbind to stack our data. So, they need to have the same column names across all data frames. We really only care about having bldgs_dist and roads_dist for the distance variables. We need all of the environmental variables.
 #Konza
-head(knz_final)
+head(knz_dist)
 knz_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
-knz_final <- knz_final[knz_vari]
-head(knz_final)
+knz_dist <- knz_dist[knz_vari]
+head(knz_dist)
 #Harvard
-head(hrf_final)
+head(hrf_dist)
 hrf_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
-hrf_final <- hrf_final[hrf_vari]
-head(hrf_final)
+hrf_dist <- hrf_dist[hrf_vari]
+head(hrf_dist)
 #Toolik
-names(toolik)
+names(tool_dist)
 tool_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
-tool_final <- toolik[tool_vari]
-head(tool_final)
+tool_dist <- tool_dist[tool_vari]
+head(tool_dist)
 
-all_dist1<-rbind(tool_final, hrf_final)
+all_dist1<-rbind(tool_dist, hrf_dist)
 head(all_dist1)
-all_dist<-rbind(all_dist1, knz_final)
+all_dist<-rbind(all_dist1, knz_dist)
 head(all_dist)
 
 #Take the average of slp, asp, and elev by plotID.
@@ -195,8 +170,6 @@ names(all_dist_max)
 names(all_rich_max)
 
 united  <-merge(all_dist_max, all_rich_max, by=c("plotID", "siteID"))
-head(united)
-
 head(united)
 ###############################################################################
 #-------------------------------------------------------------------------------
