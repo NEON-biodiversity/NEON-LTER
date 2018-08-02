@@ -279,7 +279,7 @@ bird.plant<-merge(arc_bird, arc_plant, by=c("plotID", "nlcdCls", "elevatn","tool
 names(bird.plant)
 
 #Remove unnecessary columns
-bird.plant<-bird.plant[c(-(7:18))]
+bird.plant<-bird.plant[c(-(7:17))]
 names(bird.plant)
 bird.plant1<- bird.plant[c(-(8:18))]
 names(bird.plant1)

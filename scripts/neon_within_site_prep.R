@@ -51,7 +51,7 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
 # Read in plot-level richness data from each taxon
 # The raw data were all pulled on 20 June 2018; github/NEON-biodiversity/neonbiodiversity/code/neon_organism_api_export.R 
 #disturbance distance
-dist<-read.csv(file.path(data_path,"./disturbance/neon_plotid_dist2disturbance.csv"), stringsAsFactors = FALSE)
+dist<-read.csv(file.path(data_path,"./disturbance/neon_plotid_dist2disturbance_arc.csv"), stringsAsFactors = FALSE)
 
 #organismal data
 mammals <- read.csv(file.path(data_path,"./richness/mammal_richness_cumulative_plot.csv"), stringsAsFactors = FALSE)
@@ -100,13 +100,8 @@ head(plants)
 # merge all taxonomic data together; before you do this, make sure there is a column for taxa.
 rich<-rbind(birds, plants)
 
-#subset data for Toolik and Harvard Forest
+#subset data for Toolik
 unique(rich$siteID)
-#Use for adding harvard forest data
-#ht_rich<-rich[rich$siteID=="TOOL" | rich$siteID== "HARV",]
-#ht_rich$siteID<-factor(ht_rich$siteID)
-#head(ht_rich)
-#str(ht_rich)
 tool_rich<-rich[rich$siteID=="TOOL",]
 head(tool_rich)
 str(tool_rich)
@@ -119,7 +114,7 @@ tool_rich_max<-tool_rich%>%
 head(tool_rich_max)
 tool_rich_max<-data.frame(tool_rich_max)
 unique(tool_rich_max$plotID)
-write.csv(tool_rich_max, file="richness_max.csv")
+write.csv(tool_rich_max, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\arc\\richness_max.csv")
 #some plotIDs are NA for richness because they have not been surveyed yet.
 
 #subset
@@ -130,13 +125,13 @@ head(tool_rich_max)
 #merge with distance data
 dist_rich<- merge(dist, tool_rich_max, by=c("siteID","plotID"),all.x=T)
 head(dist_rich)
-
+names(dist_rich)
 #----------------------------------------------------------
 # Convert distance file to wide format for modeling
 #----------------------------------------------------------
 # Wide format for disturbance
 dist_rich1<-reshape(dist_rich, v.names="distance_m",    # the values you want to transpose to wide format
-               idvar=c("siteID","plotID", "siteNam", "richness", "taxa"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
+               idvar=c("siteID","plotID", "richness", "taxa"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
                timevar="dist_type",  # the name of the grouping variable.
                direction="wide") # the direction (can also be long)
 str(dist_rich1)
@@ -185,14 +180,14 @@ head(arc_env)
 #Check it
 arc_env[duplicated(arc_env$plotID),]
 
-write.csv(arc_env, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\arc_environment.csv", row.names=F)
+write.csv(arc_env, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\arc\\arc_environment.csv", row.names=F)
 head(arc_env)
 #writing a csv is necessary to merge the files. It will NOT work without first writing a csv and importing it again. 
 
 #merge dist_rich1 and arc_env
 names(dist_rich1)
 names(arc_env)
-toolik<-merge(arc_env, dist_rich1, by=c("plotID"),all.x=T)
+toolik<-merge(arc_env, dist_rich1, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"),all.x=T)
 head(toolik)
 
 #Get rid of NAs for plots not sampled yet.

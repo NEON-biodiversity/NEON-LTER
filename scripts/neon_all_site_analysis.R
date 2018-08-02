@@ -24,7 +24,7 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
              axis.text.y = element_text(size = 10))
 
 #You need to load all the workspace from the prep to be able to do any modeling.
-load("neon_all_site_prep.RData")
+load("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\neon\\neon_all_site_prep.RData")
 
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test
 library(psych)
@@ -308,4 +308,4 @@ richness.bp+labs(title="Richness",
 #Correlation test
 cor.test(kth$richness.bird,kth$richness.plant)
 
-#Across sites birds have a positive correlation with plants.Although it is a weak correlation with a value or 0.189. 
+#Across sites birds have a positive correlation with plants. It is a weak correlation with a value or 0.189. 

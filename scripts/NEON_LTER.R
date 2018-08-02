@@ -43,38 +43,38 @@ head(knz_UTM)
 #Next we need to import and reproject all of the relevant disturbance shape files. After importing, always plot to be sure you have the appropriate shapes. Also, check if the files are in UTMs. If not, reproject the same way we did for the NEON terrestrial data. We need UTMs to measure distance in meters.
 #ARC data
 #Camp Buildings 2013 Data
-cb13 <- readOGR(".\\arc\\gis_data\\camp_buildings_2013$data", "Camp_Buildings_2013")
+cb13 <- readOGR(".\\arc\\gis_data\\camp_buildings", "Camp_Buildings_2013")
 plot(cb13, col=rainbow(10), alpha=1, legend=F, main="Camp Buildings 2013")
 summary(cb13)
 
 #Roads & Trails Data
-rt<- readOGR(".\\arc\\gis_data\\roads_trails$data", "transport_100423")
+rt<- readOGR(".\\arc\\gis_data\\roads", "roads")
 plot(rt, legend=F, main="Road_Trails")
 summary(rt)
 rt<-spTransform(rt, CRS("+proj=utm +zone=6 ellps=WGS84"))
 summary(rt)
 
 #Pipeline Data
-pipeline<- readOGR(".\\arc\\gis_data\\taps$data", "pipeline_proj")
+pipeline<- readOGR(".\\arc\\gis_data\\pipeline", "pipeline")
 plot(pipeline, legend=F, main="Pipeline")
 summary(pipeline)
 pipeline<-spTransform(pipeline, CRS("+proj=utm +zone=6 ellps=WGS84"))
 summary(pipeline)
 
 #Anaktuvuk Burn Perimeter Data
-anaktuvuk<-readOGR(".\\arc\\gis_data\\anaktuvuk_burn_perim$data", "progression_perimeters_0822-0930")
+anaktuvuk<-readOGR(".\\arc\\gis_data\\burn", "progression_perimeters_0822-0930")
 plot(anaktuvuk, col=grey(1:100/100), main="Anaktuvuk Burn Perimeter")
 summary(anaktuvuk)
 anaktuvuk<-spTransform(anaktuvuk, CRS("+proj=utm +zone=6 ellps=WGS84"))
 summary(anaktuvuk)
 
 #Thermokarst Data
-thermokarst<- readOGR(".\\arc\\gis_data\\watersheds_research$data\\Watersheds_Research", "Thermokarst_Watershed")
+thermokarst<- readOGR(".\\arc\\gis_data\\watershed", "Thermokarst_Watershed")
 plot(thermokarst, col=blues9, main="Thermokarst")
 summary(thermokarst)
 
 #Toolik Inlet Water Source
-toolwater<- readOGR(".\\arc\\gis_data\\watersheds_research$data\\Watersheds_Research", "Toolik_inlet_Watershed")
+toolwater<- readOGR(".\\arc\\gis_data\\watershed", "Toolik_inlet_Watershed")
 plot(toolwater, col="blue", main="Toolik Inlet Water")
 summary(toolwater)
 ################################################################################
