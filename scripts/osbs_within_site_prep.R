@@ -13,8 +13,13 @@
 graphics.off()
 
 # Set working directory
-setwd("~/Documents/NEON_LTER_2018")
-# Google drive directory: "NEON_LTER_2018/data/raw_data/neon"
+#setwd("~/Documents/NEON_LTER_2018")
+# Set file paths
+google_drive <- 'G:\\My Drive\\NEON_LTER_2018\\data'
+setwd(file.path(google_drive, 'final_data\\neon')) # GD location
+# file path location for LTER disturbance and richness data by NEON plot
+data_path <- file.path(google_drive, 'final_data\\neon')
+fig_path <- file.path(google_drive, 'output')
 
 #Install/load packages
 for (package in c("lme4", "plyr", "dplyr", "purrr", "raster", "reshape2", "lubridate", "ggplot2")) {
@@ -37,7 +42,7 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
 # Read in plot-level richness data from each taxon
 # The raw data were all pulled on 20 June 2018; github/NEON-biodiversity/neonbiodiversity/code/neon_organism_api_export.R 
 #disturbance distance
-dist<-read.csv(("neon_plotid_dist2disturbance_osbs.csv"), stringsAsFactors = FALSE)
+dist<-read.csv("G:/My Drive/NEON_LTER_2018/data/final_data/osbs/neon_plotid_dist2disturbance_osbs.csv")
 
 #organismal data
 mammals <- read.csv("./richness/mammal_richness_cumulative_plot.csv")
@@ -101,7 +106,7 @@ osbs_rich_max<-osbs_rich%>%
 head(osbs_rich_max)
 osbs_rich_max<-data.frame(osbs_rich_max)
 unique(osbs_rich_max$plotID)
-write.csv(osbs_rich_max, file="richness_max_osbs.csv")
+write.csv(osbs_rich_max, file="G:/My Drive/NEON_LTER_2018/data/final_data/osbs/richness_max_osbs.csv")
 #some plotIDs are NA for richness because they have not been surveyed yet.
 
 #subset
@@ -131,7 +136,7 @@ head(dist_rich1)
 library(rgdal)
 
 #elevation subset from all NEON spatial data
-terrestrial<- readOGR(dsn="./All_NEON_TOS_Plots_V4/All_NEON_TOS_Centroid_V4.shp")
+terrestrial<- readOGR("G:/My Drive/NEON_LTER_2018/data/raw_data/neon/spatial_data/All_NEON_TOS_Plots_V4/All_Neon_TOS_Centroid_V4.shp")
 plot(terrestrial, col=cm.colors(5), alpha=1, legend=F, main="Terrestrial Data")
 head(terrestrial)
 
@@ -167,17 +172,14 @@ head(osbs_ter_env)
 #Check it
 osbs_ter_env[duplicated(osbs_ter_env$plotID),]
 
-write.csv(osbs_ter_env, file="~/Documents/NEON_LTER_2018/osbs_environment.csv", row.names=F)
+write.csv(osbs_ter_env, file="G:/My Drive/NEON_LTER_2018/data/final_data/osbs/osbs_environment.csv", row.names=F)
 head(osbs_ter_env)
 #writing a csv is necessary to merge the files. It will NOT work without first writing a csv and importing it again. 
 
 #merge dist_rich1 and osbs_ter_env
 names(dist_rich1)
 names(osbs_ter_env)
-osbs1<-merge(osbs_ter_env, dist_rich1, by=c("plotID"),all.x=T)
-head(osbs1)
-
-osbs<-merge(osbs_ter_env, dist_rich1, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"),all.x=T)
+osbs<-merge(osbs_ter_env, dist_rich1, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"),all=T)
 head(osbs)
 
 #Get rid of NAs for plots not sampled yet.
@@ -239,6 +241,9 @@ em
 eml <- ggplot(osbs_mammal, aes(x=elevatn, y=richness)) +
   geom_point(aes()) + scale_y_log10()  
 eml
+
+##**Cameo stopped here in reviewing this code.**
+
 #################################################################################
 #Histograms
 
