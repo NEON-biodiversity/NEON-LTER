@@ -92,7 +92,7 @@ summary(osmu_burn)
 
 
 #################################################################################
-#Now we are going to measure distance between NEON data collection points and the Anaktuvuk fire.
+#Now we are going to measure distance between NEON data collection points and the fires.
 
 osbs_burn_dist<- apply(gDistance(osbs_UTM, osmu,byid=TRUE),2,min)
 osbs_burn_dist<- data.frame(osbs_burn_dist)

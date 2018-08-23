@@ -242,7 +242,6 @@ eml <- ggplot(osbs_mammal, aes(x=elevatn, y=richness)) +
   geom_point(aes()) + scale_y_log10()  
 eml
 
-##**Cameo stopped here in reviewing this code.**
 
 #################################################################################
 #Histograms
@@ -321,27 +320,14 @@ summary(pm5)
 #ANOVA
 anova(pm1, pm2) #Not Significant
 anova(pm1, pm3) #Not Significant
-anova(pm1, pm4) #*****Significant****** p<0.1
+anova(pm1, pm4) #*****Significant****** p=0.001
 anova(pm1, pm5) #Not Significant
 anova(pm2, pm3) #Not Significant
-anova(pm2, pm4) #*****Significant****** p<0.05
+anova(pm2, pm4) #*****Significant****** p=0.0005
 anova(pm2, pm5) #Not Significant
-anova(pm3, pm4) #*****Significant****** p<0.05
+anova(pm3, pm4) #*****Significant****** p=0.00015
 anova(pm3, pm5) #Not Significant
-anova(pm4, pm5) #*****Significant****** p<0.01
-
-# # Remove outliers
-# #roads
-# plot(osbs_plant$distance_m.roads, osbs_plant$ln.richness)
-# 
-# identify(osbs_plant$distance_m.roads, osbs_plant$ln.richness, labels=row.names(osbs_plant)) 
-# osbs_plant$plotID
-# #Row name is 34 this is TOOL_041 plotID in plant.rich.max. We are going to remove this data point. And any other outliers we identify.
-# arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_041")
-# arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_042")
-# arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_043")
-# plot(arc_plant$distance_m.roads, arc_plant$ln.richness)
-# 
+anova(pm4, pm5) #*****Significant****** p=3.935e-05
 
 # Plot the relationship between ln.richness and the distance_m.roads
 rich.road<-ggplot(osbs_plant, aes(x = distance_m.roads, y = ln.richness)) + 
@@ -448,20 +434,6 @@ bird.rich.road<-ggplot(arc_bird, aes(x = distance_m.roads, y =ln.richness)) +
   stat_smooth(method = "lm", col = "blue")
 bird.rich.road+labs(title="Birds",
                     x ="Distance to Road", y = "Species Richness")
-
-
-# Remove outliers
-#roads
-plot(arc_bird$distance_m.roads, arc_bird$ln.richness)
-
-identify(arc_plant$distance_m.roads, arc_plant$ln.richness, labels=row.names(arc_plant)) 
-arc_plant$plotID
-#Row name is 34 this is TOOL_041 plotID in plant.rich.max. We are going to remove this data point. And any other outliers we identify.
-arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_041")
-arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_042")
-arc_plant<-subset(arc_plant,arc_plant$plotID != "TOOL_043")
-plot(arc_plant$distance_m.roads, arc_plant$ln.richness)
-
 
 # Plot the relationship between ln.richness and the distance_m.roads
 bird_rich_road<-ggplot(arc_bird, aes(x = distance_m.roads, y =ln.richness)) + 
