@@ -23,19 +23,24 @@ library(ggplot2)
 library(ggmap) 
 
 #Read in these csv files to work with distance calculations
-knz_dist<-read.csv(file.path(data_path, "./disturbance/knz_dist.csv"),stringsAsFactors = FALSE)
+#knz_dist<-read.csv(file.path(data_path, "./disturbance/knz_dist.csv"),stringsAsFactors = FALSE)
 hrf_dist<-read.csv(file.path(data_path, "./disturbance/hrf_dist.csv"),stringsAsFactors = FALSE)
 tool_dist<-read.csv(file.path(data_path, "./disturbance/arc_dist.csv"),stringsAsFactors = FALSE)
-
-names(knz_dist)
+osbs_dist<-read.csv(file.path(data_path, "./disturbance/osbs_dist.csv"),stringsAsFactors = FALSE)
+#names(knz_dist)
 names(hrf_dist)
 names(tool_dist)
+names(osbs_dist)
 
 #exclude unnecessary columns
 tool_dist$coords.x1<-NULL	
 tool_dist$coords.x2<-NULL	
 tool_dist$optional<-NULL	
+osbs_dist$coords.x1<-NULL
+osbs_dist$coords.x2<-NULL
+osbs_dist$optional<-NULL
 head(tool_dist)
+head(osbs_dist)
 
 #organismal data
 mammals <- read.csv(file.path(data_path,"./richness/mammal_richness_cumulative_plot.csv"), stringsAsFactors = FALSE)
@@ -86,8 +91,8 @@ rich<-rbind(birds, plants)
 
 #subset data for Toolik and Harvard Forest
 unique(rich$siteID)
-#Use for adding harvard forest and konza prairie data
-all_rich<-rich[rich$siteID=="TOOL" | rich$siteID== "HARV" | rich$siteID== "KONZ",]
+#Use for adding harvard forest and ordway swisher data
+all_rich<-rich[rich$siteID=="TOOL" | rich$siteID== "HARV" | rich$siteID== "OSBS",]
 all_rich$siteID<-factor(all_rich$siteID)
 head(all_rich)
 
@@ -110,7 +115,8 @@ head(all_rich_max)
 #Now that we have the richness max values for KNZ, TOOL, and HRF, we will combine the distance data for these three sites.
 names(tool_dist)
 names(hrf_dist)
-names(knz_dist)
+names(osbs_dist)
+#names(knz_dist)
 
 #Toolik
 #Rename columns
@@ -118,13 +124,17 @@ names(knz_dist)
 names(tool_dist)[names(tool_dist)=="burn_dist"]<-"severe_dist"
 names(tool_dist)
 
+#OSBS
+names(osbs_dist)[names(osbs_dist)=="building_dist"]<-"bldgs_dist"
+head(osbs_dist)
+
 #Konza
-names(knz_dist)[names(knz_dist)=="burn_dist"]<-"severe_dist"
-head(knz_dist)
+#names(knz_dist)[names(knz_dist)=="burn_dist"]<-"severe_dist"
+#head(knz_dist)
 
 #Change all 0 values for distance to 0.001
-knz_dist$severe_dist[knz_dist$severe_dist == 0] <- 1
-head(knz_dist)
+#knz_dist$severe_dist[knz_dist$severe_dist == 0] <- 1
+#head(knz_dist)
 
 #Harvard
 names(hrf_dist)[names(hrf_dist)=="cut_dist"]<-"severe_dist"
@@ -134,25 +144,35 @@ hrf_dist$severe_dist[hrf_dist$severe_dist == 0] <- 1
 head(hrf_dist)
 
 #Bind these dataframes. We want to use rbind to stack our data. So, they need to have the same column names across all data frames. We really only care about having bldgs_dist and roads_dist for the distance variables. We need all of the environmental variables.
+
 #Konza
-head(knz_dist)
-knz_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
-knz_dist <- knz_dist[knz_vari]
-head(knz_dist)
+#head(knz_dist)
+#knz_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
+#knz_dist <- knz_dist[knz_vari]
+#head(knz_dist)
+
 #Harvard
 head(hrf_dist)
 hrf_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
 hrf_dist <- hrf_dist[hrf_vari]
 head(hrf_dist)
+
 #Toolik
 names(tool_dist)
 tool_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
 tool_dist <- tool_dist[tool_vari]
 head(tool_dist)
 
+#OSBS
+names(osbs_dist)
+osbs_vari <- c("siteID", "plotID", "elevatn", "nlcdCls", "slpGrdn", "slpAspc", "bldgs_dist", "roads_dist", "severe_dist")
+osbs_dist <- osbs_dist[osbs_vari]
+head(osbs_dist)
+
 all_dist1<-rbind(tool_dist, hrf_dist)
 head(all_dist1)
-all_dist<-rbind(all_dist1, knz_dist)
+#waiting for wei to add burn distance to her osbs_dist csv so that I can do this next step.
+all_dist<-rbind(all_dist1, osbs_dist)
 head(all_dist)
 
 #Take the average of slp, asp, and elev by plotID.
