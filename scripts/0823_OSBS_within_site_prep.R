@@ -4,12 +4,18 @@
 # Authors:      Phoebe Zarnetske, Cameo Arnold, Huijie Wei
 # Date:         20 Aug 2018
 
+#Clear environment
+rm(list=ls())
+
 #Close graphics devices
 graphics.off()
 
-# Set working directory
-setwd("~/Documents/NEON_LTER_2018")
-# Google drive directory: "NEON_LTER_2018/data/raw_data/neon"
+# Set file paths
+google_drive <- 'G:\\My Drive\\NEON_LTER_2018\\data'
+setwd(file.path(google_drive, 'final_data\\neon')) # GD location
+# file path location for LTER disturbance and richness data by NEON plot
+data_path <- file.path(google_drive, 'final_data\\neon')
+fig_path <- file.path(google_drive, 'output')
 
 #Install/load packages
 for (package in c("lme4", "plyr", "dplyr", "purrr", "raster", "reshape2", "lubridate", "ggplot2")) {
@@ -32,7 +38,7 @@ theme_update(axis.text.x = element_text(size = 10, angle = 90),
 # Read in plot-level richness data from each taxon
 # The raw data were all pulled on 20 June 2018; github/NEON-biodiversity/neonbiodiversity/code/neon_organism_api_export.R 
 #disturbance distance
-dist<-read.csv(("neon_plotid_dist2disturbance_osbs.csv"), stringsAsFactors = FALSE)
+osbs_dist<-read.csv("G:/My Drive/NEON_LTER_2018/data/final_data/neon/disturbance/neon_plotid_dist2disturbance_osbs.csv")
 
 #organismal data
 mammals <- read.csv("./richness/mammal_richness_cumulative_plot.csv")
@@ -67,7 +73,7 @@ birds$taxa<-"bird"
 #trees$taxa<-"tree"
 #zoop$taxa<-"zooplankton"
 
-# do this for each taxonomic group
+#Check each taxonomic group
 head(mammals)
 head(birds)
 head(plants)
@@ -105,25 +111,25 @@ osbs_rich_max<-osbs_rich_max[,keep]
 head(osbs_rich_max)
 
 #merge with distance data
-dist_rich<- merge(dist, osbs_rich_max, by=c("siteID","plotID"),all.x=T)
-head(dist_rich)
-names(dist_rich)
+osbs_dist_rich<- merge(osbs_dist, osbs_rich_max, by=c("siteID","plotID"),all.x=T)
+head(osbs_dist_rich)
+names(osbs_dist_rich)
 #----------------------------------------------------------
 # Convert distance file to wide format for modeling
 #----------------------------------------------------------
 # Wide format for disturbance
-dist_rich1<-reshape(dist_rich, v.names="distance_m",    # the values you want to transpose to wide format
+osbs_dist_rich1<-reshape(osbs_dist_rich, v.names="distance_m",    # the values you want to transpose to wide format
                     idvar=c("siteID","plotID", "richness", "taxa"),  # your independent variable(s); careful because if you keep the other columns in your dataset, it may be confusing how the other columns relate to these new columns
                     timevar="dist_type",  # the name of the grouping variable.
                     direction="wide") # the direction (can also be long)
-str(dist_rich1)
-head(dist_rich1)
+str(osbs_dist_rich1)
+head(osbs_dist_rich1)
 
-write.csv(dist_rich1, file="~/Documents/NEON_LTER_2018/dist_rich.csv", row.names=F)
+write.csv(osbs_dist_rich1, file="~/Documents/NEON_LTER_2018/dist_rich.csv", row.names=F)
 
 ## add the fire frequency and the burn times data
 library(rgdal)
-firelog<-readOGR(dsn = "./osbs_points/01osbs_points.shp")
+firelog<-readOGR("G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\osbs\\osbs_points\\01osbs_points.shp")
 names(firelog)
 
 #subset elevation, slope, aspect, and landcover fire frequency and last burn terrestrial data
@@ -151,24 +157,20 @@ head(env_fire_ter)
 #Check it
 env_fire_ter[duplicated(env_fire_ter$plotID),]
 
-## merge the fire data and richnessdata
-head(dist_rich1)
+## merge the fire data and richness data
+head(osbs_dist_rich1)
 head(env_fire)
-# dist_rich2<-merge(dist_rich1,env_fire,by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"),all=T)
-dist_rich2<-left_join(dist_rich1, env_fire@data, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"))
-head(dist_rich2)
+osbs_dist_rich2<-left_join(osbs_dist_rich1, env_fire@data, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"))
+head(osbs_dist_rich2)
 
-write.csv(dist_rich2,file = "dist_rich_fire_data.csv",row.names = F)
-
+write.csv(osbs_dist_rich2,file = "dist_rich_fire_data.csv",row.names = F)
 
 # ------------------------------------------------------------
 # Now we are going to look at elevation with species richness
 # ------------------------------------------------------------
 
-library(rgdal)
-
 #elevation subset from all NEON spatial data
-terrestrial<- readOGR(dsn="./All_NEON_TOS_Plots_V4/All_NEON_TOS_Centroid_V4.shp")
+terrestrial<- readOGR("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_NEON_TOS_Centroid_V4.shp")
 plot(terrestrial, col=cm.colors(5), alpha=1, legend=F, main="Terrestrial Data")
 head(terrestrial)
 
@@ -204,14 +206,14 @@ head(osbs_ter_env)
 #Check it
 osbs_ter_env[duplicated(osbs_ter_env$plotID),]
 
-write.csv(osbs_ter_env, file="~/Documents/NEON_LTER_2018/osbs_environment.csv", row.names=F)
+write.csv(osbs_ter_env, file="G:\\My Drive\\NEON_LTER_2018\\data\\final_data\\osbs\\osbs_environment.csv", row.names=F)
 head(osbs_ter_env)
 #writing a csv is necessary to merge the files. It will NOT work without first writing a csv and importing it again. 
 
 #merge dist_rich1 and osbs_ter_env
-names(dist_rich2)
+names(osbs_dist_rich2)
 names(osbs_ter_env)
-osbs<-merge(osbs_ter_env, dist_rich2, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"),all=T)
+osbs<-merge(osbs_ter_env, osbs_dist_rich2, by=c("plotID", "nlcdCls", "elevatn", "slpAspc", "slpGrdn"),all=T)
 head(osbs)
 
 #Get rid of NAs for plots not sampled yet.
@@ -276,8 +278,6 @@ em
 eml <- ggplot(osbs_mammal, aes(x=elevatn, y=richness)) +
   geom_point(aes()) + scale_y_log10()  
 eml
-
-
 
 #################################################################################
 #Histograms
