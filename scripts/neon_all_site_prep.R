@@ -119,26 +119,31 @@ names(osbs_dist)
 #names(knz_dist)
 
 #Toolik
-#Rename columns
 #Rename columns to specify disturbance type and distance in meters.
 names(tool_dist)[names(tool_dist)=="burn_dist"]<-"severe_dist"
 names(tool_dist)
 
 #OSBS
 names(osbs_dist)[names(osbs_dist)=="building_dist"]<-"bldgs_dist"
+names(osbs_dist)[names(osbs_dist)=="fire_dist"]<-"severe_dist"
+head(osbs_dist)
+
+#Change all 0 values for distance to 1
+osbs_dist$severe_dist[osbs_dist$severe_dist == 0] <- 1
 head(osbs_dist)
 
 #Konza
 #names(knz_dist)[names(knz_dist)=="burn_dist"]<-"severe_dist"
 #head(knz_dist)
 
-#Change all 0 values for distance to 0.001
+#Change all 0 values for distance to 1
 #knz_dist$severe_dist[knz_dist$severe_dist == 0] <- 1
 #head(knz_dist)
 
 #Harvard
 names(hrf_dist)[names(hrf_dist)=="cut_dist"]<-"severe_dist"
 head(hrf_dist)
+
 #Change all 0 values for distance to 0.001
 hrf_dist$severe_dist[hrf_dist$severe_dist == 0] <- 1
 head(hrf_dist)
@@ -171,7 +176,6 @@ head(osbs_dist)
 
 all_dist1<-rbind(tool_dist, hrf_dist)
 head(all_dist1)
-#waiting for wei to add burn distance to her osbs_dist csv so that I can do this next step.
 all_dist<-rbind(all_dist1, osbs_dist)
 head(all_dist)
 
@@ -277,15 +281,15 @@ head(united)
 #Temperature & Precipitation Data
 # Read NEON point data
 terrestrial <- readOGR("G:\\My Drive\\NEON_LTER_2018\\data\\raw_data\\neon\\spatial_data\\All_NEON_TOS_Plots_V4\\All_Neon_TOS_Centroid_V4.shp")
-knz <- terrestrial[terrestrial$siteNam=="Konza Prairie Biological Station",]
-knz_map <- spTransform(knz, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
+#knz <- terrestrial[terrestrial$siteNam=="Konza Prairie Biological Station",]
+#knz_map <- spTransform(knz, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 hrf <- terrestrial[terrestrial$siteNam=="Harvard Forest",]
 hrf_map <- spTransform(hrf, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 arc <- terrestrial[terrestrial$siteNam=="Toolik Lake",]
 arc_map <- spTransform(arc, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
-
+osbs <- terrestrial[terrestrial$siteNam=="Ordway-Swisher Biological Station",]
+osbs_map <- spTransform(osbs, CRS("+proj=longlat +ellps=WGS84 +datum=WGS84"))
 ##############################################################################
-
 # Install PRISM
 install_github(repo = "prism", username = "ropensci")
 library(prism) ##prism data access
@@ -301,29 +305,38 @@ RS <- prism_stack(ls_prism_data()) ##raster file of data
 proj4string(RS)<-CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs") ##assign projection info
 
 # Extract for NEON sites
-KNZ_temp <- extract(RS, knz_map, method='bilinear')
-KNZ_temp
-knz_temp<-data.frame(KNZ_temp)
-names(knz_temp)[names(knz_temp)=="knz_temp"]<-"knz_tmean"
+#KNZ_temp <- extract(RS, knz_map, method='bilinear')
+#KNZ_temp
+#knz_temp<-data.frame(KNZ_temp)
+#names(knz_temp)[names(knz_temp)=="knz_temp"]<-"knz_tmean"
 HRF_temp <- extract(RS, hrf_map, method='bilinear')
 HRF_temp
 hrf_temp<-data.frame(HRF_temp)
 hrf_temp
 names(hrf_temp)[names(hrf_temp)=="hrf_temp"]<-"hrf_tmean"
+OSBS_temp <- extract(RS, osbs_map, method='bilinear')
+OSBS_temp
+osbs_temp<-data.frame(OSBS_temp)
+osbs_temp
+names(osbs_temp)[names(osbs_temp)=="osbs_temp"]<-"osbs_tmean"
 
 # Precipitation data
 RS2 <- prism_stack(ls_prism_data()[1,1]) ##raster file of data
 proj4string(RS2)<-CRS("+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs") ##assign projection info
 
 # Extract for NEON sites
-KNZ_ppt <- extract(RS2, knz_map, method='bilinear')
-KNZ_ppt
-knz_ppt<-data.frame(KNZ_ppt)
-names(knz_ppt)[names(knz_ppt)=="knz_ppt"]<-"knz_precip"
+#KNZ_ppt <- extract(RS2, knz_map, method='bilinear')
+#KNZ_ppt
+#knz_ppt<-data.frame(KNZ_ppt)
+#names(knz_ppt)[names(knz_ppt)=="knz_ppt"]<-"knz_precip"
 HRF_ppt <- extract(RS2, hrf_map, method='bilinear')
 HRF_ppt
 hrf_ppt<-data.frame(HRF_ppt)
 names(hrf_ppt)[names(hrf_ppt)=="hrf_ppt"]<-"hrf_precip"
+OSBS_ppt <- extract(RS2, osbs_map, method='bilinear')
+OSBS_ppt
+osbs_ppt<-data.frame(OSBS_ppt)
+names(osbs_ppt)[names(osbs_ppt)=="osbs_ppt"]<-"osbs_precip"
 
 #Toolik Temp Data
 library(rgdal)
@@ -354,7 +367,6 @@ arc_ppt_spdf
 tool_ppt<- extract(arc_ppt, arc_map, tool_ppt=TRUE, method='bilinear')
 plot(tool_ppt)
 tool_ppt #mean values of precipitation in meters per neon plot in Toolik
-
 
 #transform to dataframe
 class(tool_ppt)
@@ -414,6 +426,8 @@ head(ttp1)
 #combine with united to have plant and bird richness separate
 tpb<-merge(united, ttp, by="plotID")
 head(tpb)
+
+#STOPPED HERE IN ADDING OSBS DATA
 ################################################################################
 #-------------------------------------------------------------------------------
 #Separate birds and plants richness
