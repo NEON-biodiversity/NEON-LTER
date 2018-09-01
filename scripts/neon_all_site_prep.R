@@ -427,7 +427,6 @@ head(ttp1)
 tpb<-merge(united, ttp, by="plotID")
 head(tpb)
 
-#STOPPED HERE IN ADDING OSBS DATA
 ################################################################################
 #-------------------------------------------------------------------------------
 #Separate birds and plants richness
@@ -444,71 +443,71 @@ head(tp)
 ttp1[duplicated(ttp1$plotID),]
 
 #Konza
-knz<-data.frame(knz@data)
-konza_ppt<-cbind(knz_ppt, knz)
-summary(konza_ppt)
-konza_temp<-cbind(knz_temp, knz)
-names(konza_temp)
+#knz<-data.frame(knz@data)
+#konza_ppt<-cbind(knz_ppt, knz)
+#summary(konza_ppt)
+#konza_temp<-cbind(knz_temp, knz)
+#names(konza_temp)
 
 #subset
-keep=c("plotID", "KNZ_temp")
-knz_temp1<-konza_temp[,keep]
-head(knz_temp1)
+#keep=c("plotID", "KNZ_temp")
+#knz_temp1<-konza_temp[,keep]
+#head(knz_temp1)
 
 #Check for duplicates
-knz_temp1[duplicated(knz_temp1$plotID),]
+#knz_temp1[duplicated(knz_temp1$plotID),]
 
 #Take the average. We want one value per plotID
-attach(knz_temp1)
-knz_temp1_mean<-aggregate(knz_temp1[c("KNZ_temp")],list(plotID=plotID),FUN=mean)
-detach(knz_temp1)
-head(knz_temp1_mean)
+#attach(knz_temp1)
+#knz_temp1_mean<-aggregate(knz_temp1[c("KNZ_temp")],list(plotID=plotID),FUN=mean)
+#detach(knz_temp1)
+#head(knz_temp1_mean)
 #Check again for duplicates
-knz_temp1_mean[duplicated(knz_temp1_mean$plotID),]
-names(knz_temp1_mean)[names(knz_temp1_mean)=="KNZ_temp"]<-"knz_tmean"
-head(knz_temp1_mean)
+#knz_temp1_mean[duplicated(knz_temp1_mean$plotID),]
+#names(knz_temp1_mean)[names(knz_temp1_mean)=="KNZ_temp"]<-"knz_tmean"
+#head(knz_temp1_mean)
 
-names(konza_ppt)
-keep=c("plotID", "KNZ_ppt")
-knz_ppt1<-konza_ppt[,keep]
-head(knz_ppt1)
+#names(konza_ppt)
+#keep=c("plotID", "KNZ_ppt")
+#knz_ppt1<-konza_ppt[,keep]
+#head(knz_ppt1)
 #Check for duplicates
-knz_ppt1[duplicated(knz_ppt1$plotID),]
+#knz_ppt1[duplicated(knz_ppt1$plotID),]
 #Take the average. We want one value per plotID
-attach(knz_ppt1)
-knz_ppt1_mean<-aggregate(knz_ppt1[c("KNZ_ppt")],list(plotID=plotID),FUN=mean)
-detach(knz_ppt1)
+#attach(knz_ppt1)
+#knz_ppt1_mean<-aggregate(knz_ppt1[c("KNZ_ppt")],list(plotID=plotID),FUN=mean)
+#detach(knz_ppt1)
 #Check again for duplicates
-knz_ppt1_mean[duplicated(knz_ppt1_mean$plotID),]
+#knz_ppt1_mean[duplicated(knz_ppt1_mean$plotID),]
 
 #combine
-ktp<-merge(knz_ppt1_mean, knz_temp1_mean, by="plotID")
-head(ktp)
+#ktp<-merge(knz_ppt1_mean, knz_temp1_mean, by="plotID")
+#head(ktp)
 
 #Check again for duplicates
-ktp[duplicated(ktp$plotID),]
+#ktp[duplicated(ktp$plotID),]
 
 #combine with united wide
-kttp<- merge(united_wide, ktp, by="plotID")
-head(kttp)
+#kttp<- merge(united_wide, ktp, by="plotID")
+#head(kttp)
 
 #combine with united to have plant and bird richness separate
-kpb<-merge(united, ktp, by="plotID")
-head(kpb)
+#kpb<-merge(united, ktp, by="plotID")
+#head(kpb)
 ###############################################################################
 #------------------------------------------------------------------------------
 #Separate birds and plants richness
 #------------------------------------------------------------------------------
 #birds
-kb<-kpb[kpb$taxa=="bird",]
-head(kb)
+#kb<-kpb[kpb$taxa=="bird",]
+#head(kb)
 
 #plants
-kp<-kpb[kpb$taxa=="plant",]
-head(kp)
+#kp<-kpb[kpb$taxa=="plant",]
+#head(kp)
 ###############################################################################
 #Check again for duplicates
-kttp[duplicated(kttp$plotID),]
+#kttp[duplicated(kttp$plotID),]
 
 #Harvard Forest
 hrf<-data.frame(hrf@data)
@@ -578,21 +577,101 @@ head(hp)
 #Check again for duplicates
 http[duplicated(http$plotID),]
 
+#Ordway Swisher
+osbs<-data.frame(osbs@data)
+osbs_ppt<-cbind(osbs_ppt, osbs)
+head(osbs_ppt)
+osbs_temp<-cbind(osbs_temp, osbs)
+head(osbs_temp)
+names(osbs_temp)
+#subset
+keep=c("plotID", "OSBS_temp")
+osbs_temp1<-osbs_temp[,keep]
+head(osbs_temp1)
+
+#Check for duplicates
+osbs_temp1[duplicated(osbs_temp1$plotID),]
+
+#Take the average. We want one value per plotID
+attach(osbs_temp1)
+osbs_temp1_mean<-aggregate(osbs_temp1[c("OSBS_temp")],list(plotID=plotID),FUN=mean)
+detach(osbs_temp1)
+head(osbs_temp1_mean)
+
+#Check again for duplicates
+osbs_temp1_mean[duplicated(osbs_temp1_mean$plotID),]
+names(osbs_temp1_mean)[names(osbs_temp1_mean)=="OSBS_temp"]<-"osbs_tmean"
+head(osbs_temp1_mean)
+
+names(osbs_ppt)
+keep=c("plotID", "OSBS_ppt")
+osbs_ppt1<-osbs_ppt[,keep]
+head(osbs_ppt1)
+
+#Check for duplicates
+osbs_ppt1[duplicated(osbs_ppt1$plotID),]
+
+#Take the average. We want one value per plotID
+attach(osbs_ppt1)
+osbs_ppt1_mean<-aggregate(osbs_ppt1[c("OSBS_ppt")],list(plotID=plotID),FUN=mean)
+detach(osbs_ppt1)
+names(osbs_ppt1_mean)[names(osbs_ppt1_mean)=="OSBS_ppt"]<-"osbs_ppt"
+
+#Check again for duplicates
+osbs_ppt1_mean[duplicated(osbs_ppt1_mean$plotID),]
+
+#combine
+otp<-merge(osbs_temp1_mean, osbs_ppt1_mean, by="plotID")
+head(otp)
+
+#Check again for duplicates
+otp[duplicated(otp$plotID),]
+
+#combine with united wide
+ottp<- merge(united_wide, otp, by="plotID")
+head(ottp)
+
+#combine with united to have plant and bird richness separate
+opb<-merge(united, otp, by="plotID")
+head(opb)
+################################################################################
+#------------------------------------------------------------------------------
+#Separate birds and plants richness
+#------------------------------------------------------------------------------
+#birds
+ob<-opb[opb$taxa=="bird",]
+head(ob)
+
+#plants
+op<-opb[opb$taxa=="plant",]
+head(op)
+################################################################################
+#Check again for duplicates
+ottp[duplicated(ottp$plotID),]
+
 #Combine all values to one complete data frame for modeling.
-names(kttp)
-names(kttp)[names(kttp)=="KNZ_ppt"]<-"precipitation"
-names(kttp)[names(kttp)=="knz_tmean"]<-"temperature"
+#names(kttp)
+#names(kttp)[names(kttp)=="KNZ_ppt"]<-"precipitation"
+#names(kttp)[names(kttp)=="knz_tmean"]<-"temperature"
 names(ttp1)
 names(ttp1)[names(ttp1)=="tool_ppt"]<-"precipitation"
 names(ttp1)[names(ttp1)=="tool_tmean"]<-"temperature"
 names(http)
 names(http)[names(http)=="hrf_ppt"]<-"precipitation"
 names(http)[names(http)=="hrf_tmean"]<-"temperature"
+names(ottp)
+names(ottp)[names(ottp)=="osbs_ppt"]<-"precipitation"
+names(ottp)[names(ottp)=="osbs_tmean"]<-"temperature"
 
-kt<-rbind(kttp, ttp1)
-kt
-kth<-rbind(kt,http)
-names(kth)
+#kt<-rbind(kttp, ttp1)
+#kt
+#kth<-rbind(kt,http)
+#names(kth)
+
+ot<-rbind(ottp, ttp1)
+ot
+oth<-rbind(ot, http)
+names(oth)
 
 #------------------------------------------------------------------------------
 #Combine data for separate plant and bird
@@ -601,16 +680,23 @@ names(tb)
 names(tb)[names(tb)=="tool_ppt"]<-"precipitation"
 names(tb)[names(tb)=="tool_tmean"]<-"temperature"
 
-names(kb)
-names(kb)[names(kb)=="KNZ_ppt"]<-"precipitation"
-names(kb)[names(kb)=="knz_tmean"]<-"temperature"
+#names(kb)
+#names(kb)[names(kb)=="KNZ_ppt"]<-"precipitation"
+#names(kb)[names(kb)=="knz_tmean"]<-"temperature"
 
 names(hb)
 names(hb)[names(hb)=="hrf_ppt"]<-"precipitation"
 names(hb)[names(hb)=="hrf_tmean"]<-"temperature"
 
+names(ob)
+names(ob)[names(ob)=="osbs_ppt"]<-"precipitation"
+names(ob)[names(ob)=="osbs_tmean"]<-"temperature"
+
 #birds
-all_bird1<-rbind(tb, kb)
+#all_bird1<-rbind(tb, kb)
+#head(all_bird1)
+
+all_bird1<-rbind(tb, ob)
 head(all_bird1)
 all_bird<-rbind(all_bird1, hb)
 head(all_bird)
@@ -619,15 +705,23 @@ names(tp)
 names(tp)[names(tp)=="tool_ppt"]<-"precipitation"
 names(tp)[names(tp)=="tool_tmean"]<-"temperature"
 
-names(kp)
-names(kp)[names(kp)=="KNZ_ppt"]<-"precipitation"
-names(kp)[names(kp)=="knz_tmean"]<-"temperature"
+#names(kp)
+#names(kp)[names(kp)=="KNZ_ppt"]<-"precipitation"
+#names(kp)[names(kp)=="knz_tmean"]<-"temperature"
 
 names(hp)
 names(hp)[names(hp)=="hrf_ppt"]<-"precipitation"
 names(hp)[names(hp)=="hrf_tmean"]<-"temperature"
+
+names(op)
+names(op)[names(op)=="osbs_ppt"]<-"precipitation"
+names(op)[names(op)=="osbs_tmean"]<-"temperature"
+
 #plants
-all_plant1<-rbind(tp, kp)
+#all_plant1<-rbind(tp, kp)
+#head(all_plant1)
+
+all_plant1<-rbind(tp, op)
 head(all_plant1)
 all_plant<-rbind(all_plant1, hp)
 head(all_plant)
@@ -637,16 +731,25 @@ names(tpb)
 names(tpb)[names(tpb)=="tool_ppt"]<-"precipitation"
 names(tpb)[names(tpb)=="tool_tmean"]<-"temperature"
 
-names(kpb)
-names(kpb)[names(kpb)=="KNZ_ppt"]<-"precipitation"
-names(kpb)[names(kpb)=="knz_tmean"]<-"temperature"
+#names(kpb)
+#names(kpb)[names(kpb)=="KNZ_ppt"]<-"precipitation"
+#names(kpb)[names(kpb)=="knz_tmean"]<-"temperature"
 
 names(hpb)
 names(hpb)[names(hpb)=="hrf_ppt"]<-"precipitation"
 names(hpb)[names(hpb)=="hrf_tmean"]<-"temperature"
-kh_final<-rbind(hpb, kpb)
-kth_final<-rbind(kh_final, tpb)
-head(kth_final)
+
+names(opb)
+names(opb)[names(opb)=="osbs_ppt"]<-"precipitation"
+names(opb)[names(opb)=="osbs_tmean"]<-"temperature"
+
+#kh_final<-rbind(hpb, kpb)
+#kth_final<-rbind(kh_final, tpb)
+#head(kth_final)
+
+oh_final<-rbind(hpb, opb)
+oth_final<-rbind(oh_final, tpb)
+head(oth_final)
 ##################################################################################
 save.image("neon_all_site_prep.RData")
 #Now you're ready for modeling. See script neon_all_site_analysis.

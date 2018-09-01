@@ -39,7 +39,7 @@ apm1<-lm(all_plant$richness~all_plant$bldgs_dist+
            all_plant$precipitation+
            all_plant$temperature)
 summary(apm1)
-#significant variables: roads, herbaceous, and temperature
+#significant variables: intercept, evergreen Forest, and Herbaceous Wetlands
 
 #Reduced Model 2 - removed bldgs and elevatn
 apm2<-lm(all_plant$richness~
@@ -48,7 +48,7 @@ apm2<-lm(all_plant$richness~
            all_plant$precipitation+
            all_plant$temperature)
 summary(apm2)
-#significant variables: roads, herbaceous, and temperature
+#significant variables: intercept, roads, evergreen Forest, and Herbaceous Wetlands
 
 #Reduced Model 3 - removed precipitation
 apm3<-lm(all_plant$richness~
@@ -56,19 +56,19 @@ apm3<-lm(all_plant$richness~
            all_plant$nlcdCls+
            all_plant$temperature)
 summary(apm3)
-#significant variables: intercept, roads, sedgeHerbaceous, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, woodyWetlands, and temperature
+#significant variables: intercept, roads, evergreen Forest, and Herbaceous Wetlands
 
 #Reduced Model 4 - model individual significant variables
 apm4<-lm(all_plant$richness~
            all_plant$roads_dist)
 summary(apm4)
-#significant variables: intercept
+#significant variables: intercept and roads
 
 #Reduced Model 5 - model individual significant variables
 apm5<-lm(all_plant$richness~
            all_plant$nlcdCls+ all_plant$siteID)
 summary(apm5)
-#significant variables: intercept, deciduousForest, evergreenForest,  mixedForest, and woodyWetlands
+#significant variables: intercept, dwarf Scrub, and evergreen Forest
 
 #Reduced Model 6 - model individual significant variables
 apm6<-lm(all_plant$richness~
@@ -96,13 +96,13 @@ plant_landcover<-ggplot(all_plant, aes(x =nlcdCls , y =richness, fill=siteID)) +
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue")
 plant_landcover+labs(title="Richness",
-                     x ="Land Cover Type", y = "plant richness")
+                     x ="Landcover Type", y = "Plant Richness")
 
-plant_temperature<-ggplot(all_plant, aes(x =temperature , y =richness, fill=siteID)) + 
+plant_temperature<-ggplot(all_plant, aes(x =temperature , y =richness, fill=siteID))+
   geom_point() +
   stat_smooth(method = "lm", col = "blue")
 plant_temperature+labs(title="Richness",
-                     x ="Temperature", y = "plant richness")
+                     x ="Temperature", y = "Plant Richness")
 
 ###############################################################################
 #Birds
@@ -113,8 +113,7 @@ abm1<-lm(all_bird$richness~all_bird$bldgs_dist+
            all_bird$precipitation+
            all_bird$temperature)
 summary(abm1)
-
-#significant variables: deciduousForest, evergreenForest, mixedForest, and woodyWetlands
+#significant variables: intercept, dward Scrub, Herbaceous Wetlands, evergreen Forest, sedge Herbaceous, shrub Scrub, woody Wetlands, and temperature
 
 #Reduced Model - remove bldgs and roads
 abm2<-lm(all_bird$richness~
@@ -123,7 +122,7 @@ abm2<-lm(all_bird$richness~
            all_bird$precipitation+
            all_bird$temperature)
 summary(abm2)
-#significant variables: deciduousForest, evergreenForest, mixedForest, and woodyWetlands
+#significant variables: intercept, dward Scrub, Herbaceous Wetlands, evergreen Forest, sedge Herbaceous, shrub Scrub, woody Wetlands, and temperature
 
 #Reduced Model - remove elevatn
 abm3<- lm(all_bird$richness~
@@ -131,13 +130,13 @@ abm3<- lm(all_bird$richness~
             all_bird$precipitation+
             all_bird$temperature)
 summary(abm3)
-#significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: intercept, dward Scrub, Herbaceous Wetlands, evergreen Forest, sedge Herbaceous, shrub Scrub, woody Wetlands, and temperature
 
 #Reduced Model - model only significant variable
 abm4<- lm(all_bird$richness~
             all_bird$nlcdCls+all_bird$siteID)
 summary(abm4)
-#significant variables: intercept, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
+#significant variables: intercept, dward Scrub, Herbaceous Wetlands, evergreen Forest, sedge Herbaceous, shrub Scrub, woody Wetlands, and OSBS 
 
 anova(abm1, abm2)#Not Significant
 anova(abm1, abm3)#Not Significant
@@ -147,17 +146,17 @@ anova(abm3, abm4)#Not Significant
 
 ################################################################################
 #Correlation Tests
-names(kth)
-pairs.panels(kth[c(3:9,16:17)])
+#names(kth)
+#pairs.panels(kth[c(3:9,16:17)])
 
 #All Data
-hist(kth_final$richness)
-kth_final$ln.richness<-log(kth_final$richness)
-hist(kth_final$ln.richness)
+#hist(kth_final$richness)
+#kth_final$ln.richness<-log(kth_final$richness)
+#hist(kth_final$ln.richness)
 
 #Complex Model
-head(kth_final)
-arm<-lm(kth_final$ln.richness~
+#head(kth_final)
+#arm<-lm(kth_final$ln.richness~
           kth_final$nlcdCls+
           kth_final$siteID+
           kth_final$bldgs_dist+
@@ -165,147 +164,147 @@ arm<-lm(kth_final$ln.richness~
           kth_final$severe_dist+
           kth_final$temperature+
           kth_final$precipitation)
-summary(arm)
+#summary(arm)
 #Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove bldgs and roads
-arm1<-lm(kth_final$ln.richness~
+#arm1<-lm(kth_final$ln.richness~
            kth_final$nlcdCls+
            kth_final$siteID+
            kth_final$severe_dist+
            kth_final$temperature+
            kth_final$precipitation)
-summary(arm1)
+#summary(arm1)
 #Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove siteID
-arm2<-lm(kth_final$ln.richness~
+#arm2<-lm(kth_final$ln.richness~
            kth_final$nlcdCls+
            kth_final$severe_dist+
            kth_final$temperature+
            kth_final$precipitation)
-summary(arm2)
+#summary(arm2)
 #Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove severe_dist
-arm3<-lm(kth_final$ln.richness~
+#arm3<-lm(kth_final$ln.richness~
            kth_final$nlcdCls+
            kth_final$temperature+
            kth_final$precipitation)
-summary(arm3)
+#summary(arm3)
 #Significant variables: sedgeHerbaceous
 
 #Reduced Model - Remove precipitation
-arm4<-lm(kth_final$ln.richness~
+#arm4<-lm(kth_final$ln.richness~
            kth_final$nlcdCls+
            kth_final$temperature)
-summary(arm4)
+#summary(arm4)
 #Significant variables: intercept and sedgeHerbaceous
 
 #Reduced Model - remove temperature
-arm5<-lm(kth_final$ln.richness~
+#arm5<-lm(kth_final$ln.richness~
            kth_final$nlcdCls)
-summary(arm5)
+#summary(arm5)
 #Significant variables: intercept, sedgeHerbaceous, deciduousForest, evergreenForest, grasslandHerbaceous, mixedForest, and woodyWetlands
 
 #Reduced Model - remove ncldCls
-arm6<-lm(kth_final$ln.richness~
+#arm6<-lm(kth_final$ln.richness~
            kth_final$temperature)
-summary(arm6)
+#summary(arm6)
 #Significant variables: intercept and temperature
 
-anova(arm, arm1)#Not Significant
-anova(arm, arm2)#Not Significant
-anova(arm, arm3)#Not Significant
-anova(arm, arm4)#Not Significant
-anova(arm, arm5)#Not Significant
-anova(arm, arm6)#Not Significant
-anova(arm1, arm2)#Not Significant
-anova(arm1, arm3)#Not Significant
-anova(arm1, arm4)#Not Significant
-anova(arm1, arm5)#Not Significant
-anova(arm1, arm6)#Not Significant
-anova(arm2, arm3)#Not Significant
-anova(arm2, arm4)#Not Significant
-anova(arm2, arm5)#Not Significant
-anova(arm2, arm6)#Not Significant
-anova(arm3, arm4)#Not Significant
-anova(arm3, arm5)#Not Significant
-anova(arm3, arm6)#Not Significant
-anova(arm4, arm5)#Not Significant
-anova(arm4, arm6)#**Significant**
-anova(arm5, arm6)#Not Significant
+#anova(arm, arm1)#Not Significant
+#anova(arm, arm2)#Not Significant
+#anova(arm, arm3)#Not Significant
+#anova(arm, arm4)#Not Significant
+#anova(arm, arm5)#Not Significant
+#anova(arm, arm6)#Not Significant
+#anova(arm1, arm2)#Not Significant
+#anova(arm1, arm3)#Not Significant
+#anova(arm1, arm4)#Not Significant
+#anova(arm1, arm5)#Not Significant
+#anova(arm1, arm6)#Not Significant
+#anova(arm2, arm3)#Not Significant
+#anova(arm2, arm4)#Not Significant
+#anova(arm2, arm5)#Not Significant
+#anova(arm2, arm6)#Not Significant
+#anova(arm3, arm4)#Not Significant
+#anova(arm3, arm5)#Not Significant
+#anova(arm3, arm6)#Not Significant
+#anova(arm4, arm5)#Not Significant
+#anova(arm4, arm6)#**Significant**
+#anova(arm5, arm6)#Not Significant
 
 #plots
-rich.land<-ggplot(kth_final, aes(x = nlcdCls , y =ln.richness, fill=siteID)) + 
+#rich.land<-ggplot(kth_final, aes(x = nlcdCls , y =ln.richness, fill=siteID)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue")
-rich.land+labs(title="Richness",
+#rich.land+labs(title="Richness",
               x ="Land Cover Type", y = "Richness")
 
-rich.temp<-ggplot(kth_final, aes(x = temperature , y =ln.richness, fill=siteID)) + geom_point() +
+#rich.temp<-ggplot(kth_final, aes(x = temperature , y =ln.richness, fill=siteID)) + geom_point() +
   stat_smooth(method = "lm", col = "blue")
-rich.temp+labs(title="Richness",
+#rich.temp+labs(title="Richness",
                x ="Temperature", y = "Richness")
 ################################################################################
 # include site as a function
-head(kth)
+head(oth)
 
 #Correlation Tests this computes all pairwise correlations using Pearson's correlation test
-names(kth)
-pairs.panels(kth[c(2:9,14:17)])
-head(kth)
+names(oth)
+pairs.panels(oth[c(2:9,14:17)])
+head(oth)
 
 # Models
-pms1<-lm(kth$richness.bird~kth$richness.plant+
-           kth$severe_dist*kth$siteID+
-           kth$ln.bldgs_dist*kth$siteID+
-           kth$ln.roads_dist*kth$siteID+
-           kth$temperature*kth$siteID+
-           kth$precipitation*kth$siteID)
+pms1<-lm(oth$richness.bird~oth$richness.plant+
+           oth$severe_dist*oth$siteID+
+           oth$ln.bldgs_dist*oth$siteID+
+           oth$ln.roads_dist*oth$siteID+
+           oth$temperature*oth$siteID+
+           oth$precipitation*oth$siteID)
 summary(pms1)
-#Significant Variables: intercept, siteIDKONZ, temperature, siteIDKONZ*temp
+#Significant Variables: intercept and temperature
 
 #Reduced model - remove precipitation and bldgs
-pms2<-lm(kth$richness.bird~kth$richness.plant+
-           kth$severe_dist+
-           kth$siteID+
-           kth$ln.roads_dist+
-           kth$temperature)
+pms2<-lm(oth$richness.bird~oth$richness.plant+
+           oth$severe_dist*oth$siteID+
+           oth$ln.roads_dist*oth$siteID+
+           oth$temperature*oth$siteID)
 summary(pms2)
-#significant variables: None
+#Significant Variables: intercept and temperature
 
 #Reduced model - only plants and roads
-pms3<-lm(kth$richness.bird~kth$richness.plant+
-           kth$ln.roads_dist)
+pms3<-lm(oth$richness.bird~oth$richness.plant+
+           oth$ln.roads_dist)
 summary(pms3)
+#Significant Variables: intercept
 
-anova(pms1,pms2) #p-value 0.16
-anova(pms1, pms3)
+
+anova(pms1,pms2) #not significant
+anova(pms1,pms3) #not significant
 
 #distance to severe disturbances by site
-sev_plot<-ggplot(kth, aes(x = siteID , y =severe_dist)) + 
+sev_plot<-ggplot(oth, aes(x = siteID , y =severe_dist)) + 
   geom_boxplot() +
-  stat_smooth(method = "lm", col = "blue") +
-  scale_y_log10()
-sev_plot+labs(title="Distance to severe disturbances per site",
+  stat_smooth(method = "lm", col = "blue")
+sev_plot+labs(title="Distance to Severe Disturbances per Site",
               x ="Richness", y = "Distance to Severe Disturbance")
 #Toolik Lake has the most distance between the severe disturbance and the NEON plots. Whereas Harvard Forest and Konza Prairie have severe disturbances occuring very close or on top of the NEON plots.
 
 #landcover and bird richness
-bird_richness<-ggplot(kth, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
+bird_richness<-ggplot(oth, aes(x = nlcdCls , y =richness.bird, fill=siteID)) + 
   geom_boxplot() +
   stat_smooth(method = "lm", col = "blue") 
 bird_richness+labs(title="Richness",
               x ="Land Cover Type", y = "Bird Richness")
 
 #bird richness to plant richness by site
-richness.bp<-ggplot(kth, aes(x = richness.plant , y =richness.bird)) + geom_point() + scale_x_log10()+
+richness.bp<-ggplot(oth, aes(x = richness.plant , y =richness.bird)) + geom_point() + scale_x_log10()+
   stat_smooth(method = "lm", col = "red") 
 richness.bp+labs(title="Richness",
-                   x ="Land Cover Type", y = "Bird Richness")
+                   x ="Plant Richness", y = "Bird Richness")
 
 #Correlation test
-cor.test(kth$richness.bird,kth$richness.plant)
+cor.test(oth$richness.bird,oth$richness.plant)
 
-#Across sites birds have a positive correlation with plants. It is a weak correlation with a value or 0.189. 
+#Across sites birds have a positive correlation with plants. It is a weak correlation with a value or 0.232. 
