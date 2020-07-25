@@ -24,7 +24,7 @@ arctic_map <- get_map(location = c(lon = -150.5, lat = 69.3),
                       zoom = 7)
 
 # Google drive file path
-google_drive <- 'c:/users/srecord/google drive/neon_lter_2018'
+google_drive <- 'C:/Users/srecord/Dropbox/LTER-NEON_land-use/NEON_LTER_2018'
 setwd(file.path (google_drive))
 #libraries
 library(raster)
@@ -126,16 +126,18 @@ arctic_map_zoomed <- get_map(location = c(lon = -149.65, lat = 68.75),
 ##Instead use the code below for that step:
 
 basemap_zoomed<- ggmap(arctic_map_zoomed) + 
+  geom_point(data=tool_neon_plots.f, aes(x=coords.x1, y=coords.x2), color="orange") +
+
   geom_polygon(aes(x = long, y = lat, group = group), data = mapburn.f, 
                color = "purple",
                size = 0.2) + 
   geom_polygon(aes(x = long, y = lat, group = group), data = mapCamp10.f,
                alpha = 0, 
-               color = "blue", 
+               color = "purple", 
                size = 0.2) + xlab("Longitude")+ ylab("Latitude") + 
   ggtitle("Toolik Lake Field Station: Disturbance Patterns") + 
   theme(plot.title = element_text(hjust = .5)) + 
-  scalebar(x.min= -152.3, x.max= -153.0, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .4, height = 0.5, model="WGS84") + 
+ # scalebar(x.min= -153.0, x.max= -152.3, y.min= 68.35, y.max= 68.42, dist= 50, location= "bottomleft", dd2km = TRUE, st.size=2, st.dist = .4, height = 0.5, model="WGS84") + 
   geom_polygon(aes(x = long, y = lat, group = group), data = mappipeline.f,
                alpha = 0, 
                color = "yellow", 
@@ -143,7 +145,7 @@ basemap_zoomed<- ggmap(arctic_map_zoomed) +
   geom_polygon(aes(x = long, y = lat, group = group), 
                data = mapTrails.f, 
                alpha = 0, 
-               color = "violet",
+               color = "skyblue",
                size = 0.2) + 
   geom_polygon(aes(x = long, y = lat, group = group), data = mapThermokarstWater.f, 
                alpha = 0.8, 
@@ -151,10 +153,8 @@ basemap_zoomed<- ggmap(arctic_map_zoomed) +
                size = 0.2) + 
   geom_polygon(aes(x = long, y = lat, group = group), data = maptoolik.f, 
                alpha = 0, 
-               color = "blue",
+               color = "white",
                size = 0.2) 
 
-basemap_zoomed + geom_point(data=tool_neon_plots.f, aes(x=coords.x1, y=coords.x2))
-
-
+basemap_zoomed 
 
