@@ -4,8 +4,12 @@
 # Authors:      Kyra Hoerr  
 # Date:         28 June 2018
 
-# Set working directory
-setwd()
+#set file paths 
+root_folder <- "G:/Shared drives/MacrosystemsBiodiversity"
+setwd(file.path(root_folder))
+save_path <- file.path(root_folder, 'subprojects/MSB_landuse/Summer_Students/Site_histories/HARV/HARV_L1_Data')
+import_path1 <- file.path(root_folder, 'subprojects/MSB_landuse/Summer_Students/Site_histories/HARV/HARV_L0_Data')
+import_path2 <- file.path(root_folder, '')
 
 # Libraries
 library(raster)
